@@ -1,0 +1,330 @@
+version: "3.1"
+
+nlu:
+- intent: greet
+  examples: |
+    - hey
+    - hello
+    - hi
+    - hello there
+    - good morning
+    - good evening
+    - hey there
+    - greetings
+    - howdy
+    - hi there
+    - what's up
+    - yo
+
+- intent: goodbye
+  examples: |
+    - bye
+    - goodbye
+    - see you around
+    - see you later
+    - talk to you later
+    - catch you later
+    - have a nice day
+    - bye bye
+    - farewell
+    - take care
+    - until next time
+
+- intent: thank
+  examples: |
+    - thanks
+    - thank you
+    - thanks a lot
+    - thank you very much
+    - I appreciate it
+    - thanks for your help
+    - that's helpful, thanks
+    - awesome, thanks
+    - great, thank you
+    - perfect, thanks
+    - appreciate your assistance
+
+- intent: affirm
+  examples: |
+    - yes
+    - indeed
+    - of course
+    - that sounds good
+    - correct
+    - sure
+    - absolutely
+    - definitely
+    - yeah
+    - yep
+    - right
+    - that's right
+    - sounds good
+    - I agree
+
+- intent: deny
+  examples: |
+    - no
+    - never
+    - no way
+    - not really
+    - I don't think so
+    - nope
+    - disagree
+    - I disagree
+    - not correct
+    - that's wrong
+    - nah
+    - incorrect
+
+- intent: ask_order_status
+  examples: |
+    - What's the status of my order?
+    - Where is my order?
+    - I'd like to check my order status
+    - Can you tell me what's happening with my order?
+    - What's going on with my order [123456](order_number)?
+    - Check status for order [ORD-789012](order_number)
+    - Order status for [AB-123456](order_number)
+    - What's the status for [ORD987654](order_number)?
+    - Tell me about my order [AB123456](order_number)
+    - Is my order [ORDER456789](order_number) shipped yet?
+    - Has my order [12345](order_number) been delivered?
+    - What's happening with order [ABC789](order_number)?
+    - Is order [ABC-123-456](order_number) on its way?
+    - I want to know where order [ORD123456](order_number) is
+    - When will order [ORD12345](order_number) arrive?
+    - What's the delivery status of [ORDER-123](order_number)?
+    - Has order [ORD-987-654](order_number) been shipped?
+    - Give me an update on [OR123456](order_number)
+    - I want to track order [456789](order_number)
+    - Status check for order [OR-789-123](order_number)
+
+- intent: ask_return_policy
+  examples: |
+    - What's your return policy?
+    - How do I return an item?
+    - Can I return a product?
+    - Tell me about your return process
+    - What's the time limit for returns?
+    - Do you accept returns?
+    - How many days do I have to return?
+    - What's your policy on returns?
+    - Can I get a refund if I return?
+    - Do I need a receipt to return?
+    - How do refunds work?
+    - Is there a restocking fee for returns?
+    - Can I return a gift?
+    - Do you cover return shipping?
+    - What is your return policy for damaged items?
+    - How long will my refund take?
+    - Return policy on sale items?
+    - Can I exchange instead of return?
+    - Do you have a no-questions-asked return policy?
+    - What's your refund policy?
+
+- intent: ask_shipping_time
+  examples: |
+    - How long does shipping take?
+    - What's the delivery timeframe?
+    - When will I get my order?
+    - How many days for shipping?
+    - What's your shipping time?
+    - How long until my package arrives?
+    - Expected delivery time?
+    - Shipping duration?
+    - When should I expect delivery?
+    - How long does standard shipping take?
+    - What about express shipping?
+    - Delivery times for standard shipping?
+    - How fast is your shipping?
+    - Do you offer same-day delivery?
+    - What shipping options do you have?
+    - Fastest shipping method?
+    - Delivery timeline?
+    - How soon can I get my order?
+    - What's the shipping speed?
+    - Do you ship on weekends?
+
+- intent: ask_payment_methods
+  examples: |
+    - What payment methods do you accept?
+    - How can I pay?
+    - Do you take credit cards?
+    - Can I pay with PayPal?
+    - What cards do you accept?
+    - Payment options?
+    - Do you accept Visa?
+    - Can I use Apple Pay?
+    - Payment methods available?
+    - Do you take American Express?
+    - Is Google Pay accepted?
+    - Can I pay with a gift card?
+    - Do you offer buy now pay later?
+    - Is cash on delivery available?
+    - Accepted forms of payment?
+    - Do you have payment plans?
+    - Can I use multiple payment methods?
+    - What about bank transfers?
+    - Do you accept cryptocurrency?
+    - What's your payment process?
+
+- intent: ask_track_order
+  examples: |
+    - How do I track my order?
+    - I want to track my package
+    - Where is my shipment?
+    - Send me tracking information
+    - Need tracking for order [ORD456789](order_number)
+    - How to follow my delivery?
+    - Track order [ABC123](order_number)
+    - Where's my package for order [ORDER789](order_number)?
+    - Can I get tracking for [ORD-123-456](order_number)?
+    - How do I check where my package is?
+    - Need to track [ORD987654](order_number)
+    - Is there a tracking number for [AB123456](order_number)?
+    - I'd like to follow my shipment for [ORDER-XYZ](order_number)
+    - Give me tracking for [OR789123](order_number)
+    - How can I monitor my delivery?
+    - I want to see where my order [123-ABC](order_number) is
+    - Send me the tracking link for [ORDER123](order_number)
+    - How to track package from order [ORD456](order_number)?
+    - Where can I find tracking for my recent order?
+    - Tracking information for [ABC-789](order_number) please
+
+- intent: ask_international_shipping
+  examples: |
+    - Do you ship internationally?
+    - Do you deliver to other countries?
+    - Can I order from outside the US?
+    - International shipping options?
+    - Do you ship to Canada?
+    - Can you ship to Europe?
+    - What countries do you ship to?
+    - Do you deliver worldwide?
+    - Global shipping available?
+    - Can I get delivery to Australia?
+    - Shipping to UK possible?
+    - Do you ship to Asia?
+    - International delivery costs?
+    - How long for international shipping?
+    - Do you have global delivery?
+    - Can you ship to Mexico?
+    - Overseas shipping options?
+    - Do you deliver outside North America?
+    - How much for international delivery?
+    - Is shipping available for all countries?
+
+- intent: ask_order_cancel
+  examples: |
+    - How do I cancel my order?
+    - Can I cancel an order I just placed?
+    - I need to cancel order [ORD123456](order_number)
+    - Cancel my recent purchase
+    - How to cancel [ORDER-789](order_number)?
+    - I want to cancel my order
+    - Cancel order [AB-123-456](order_number)
+    - Is it possible to cancel [ORD987654](order_number)?
+    - Need to cancel my pending order
+    - How do I stop an order from shipping?
+    - Can I still cancel order [OR789123](order_number)?
+    - I'd like to cancel [ORDER123](order_number) please
+    - Process for cancelling an order?
+    - Need to cancel [ABC-789](order_number) immediately
+    - How long do I have to cancel my order?
+    - Can I get a refund if I cancel?
+    - Cancel [ORD456789](order_number) before shipping
+    - I made a mistake and need to cancel my order
+    - Can't proceed with order [ABC123](order_number)
+    - Need to cancel and reorder
+
+- intent: ask_product_availability
+  examples: |
+    - Is [product X](product_name) in stock?
+    - Do you have [blue shirts](product_name) available?
+    - Check availability of [wireless headphones](product_name)
+    - Are [Nike Air Max](product_name) in stock?
+    - Is the [iPhone 13](product_name) available?
+    - Do you have [Xbox Series X](product_name) in store?
+    - Checking stock for [Samsung TV](product_name)
+    - Is [PS5](product_name) available now?
+    - I'm looking for [organic coffee](product_name), is it in stock?
+    - Do you have [size 10 running shoes](product_name)?
+    - Check if [vitamin C supplements](product_name) are available
+    - Is [anti-aging cream](product_name) in stock?
+    - Availability of [gaming laptop](product_name)?
+    - Do you have [wooden dining table](product_name) ready to ship?
+    - I want to buy [yoga mat](product_name), is it available?
+    - Are [AirPods Pro](product_name) in stock?
+    - Is [organic shampoo](product_name) available to order?
+    - Do you have [dog food brand X](product_name) in stock?
+    - Check if [protein powder](product_name) is available
+    - Stock status for [winter jacket](product_name)?
+
+- intent: ask_create_account
+  examples: |
+    - How do I create an account?
+    - How to register?
+    - I want to sign up
+    - Can I create a new account?
+    - Registration process?
+    - How to make an account on your site
+    - Sign up instructions
+    - I need to create a login
+    - How to become a member?
+    - Account creation process?
+    - Guide to registering
+    - How do I join your site?
+    - Steps to create an account?
+    - I want to make a profile
+    - How to get started with an account
+    - New user registration?
+    - Can I create an account with my email [user@example.com](email)?
+    - How to set up an account?
+    - What's needed to create an account?
+    - Registration requirements?
+
+- intent: ask_reset_password
+  examples: |
+    - How do I reset my password?
+    - Forgot my password
+    - Can't remember my login details
+    - Need to change my password
+    - Password recovery process
+    - How to recover forgotten password
+    - I can't log in
+    - Lost my password
+    - Reset password for [user@example.com](email)
+    - Password reset instructions
+    - How do I get a new password?
+    - Can't access my account
+    - Need password recovery for my email
+    - Forgot login for [username@gmail.com](email)
+    - How to get back into my account
+    - Can you reset my password?
+    - Password reset link not working
+    - How to create a new password
+    - Account recovery options
+    - I need to reset my login
+
+- intent: out_of_scope
+  examples: |
+    - What's the meaning of life?
+    - Tell me a joke
+    - Can you do my homework?
+    - What's the weather like today?
+    - Who is the president?
+    - Can you order pizza for me?
+    - What's your favorite color?
+    - Sing me a song
+    - Who created you?
+    - I'm feeling sad
+    - Tell me about yourself
+    - I need medical advice
+    - What stocks should I buy?
+    - Write me a poem
+    - What do you think about politics?
+    - Can you hack a website?
+    - Who's going to win the Super Bowl?
+    - How tall are you?
+    - What's your opinion on climate change?
+    - Can we be friends? 

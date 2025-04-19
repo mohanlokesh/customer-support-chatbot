@@ -1,0 +1,123 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - thank
+  - affirm
+  - deny
+  - ask_order_status
+  - ask_return_policy
+  - ask_shipping_time
+  - ask_payment_methods
+  - ask_track_order
+  - ask_international_shipping
+  - ask_order_cancel
+  - ask_product_availability
+  - ask_create_account
+  - ask_reset_password
+  - out_of_scope
+
+entities:
+  - order_number
+  - email
+  - product_name
+
+slots:
+  order_number:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: order_number
+  email:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: email
+  product_name:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: product_name
+
+responses:
+  utter_greet:
+    - text: "Hello! I'm your AI customer support assistant. How can I help you today?"
+    - text: "Hi there! Welcome to our customer service. What can I assist you with?"
+    - text: "Good day! I'm here to help with any questions about your orders or our products."
+
+  utter_goodbye:
+    - text: "Goodbye! Feel free to chat again if you have more questions."
+    - text: "Have a great day! Come back anytime you need assistance."
+    - text: "Thanks for chatting! I'll be here if you need more help later."
+
+  utter_thank:
+    - text: "You're welcome! Is there anything else I can help you with?"
+    - text: "Happy to help! Let me know if you need anything else."
+    - text: "No problem at all! Feel free to ask if you have other questions."
+
+  utter_affirm:
+    - text: "Great! Let's proceed."
+    - text: "Perfect! Let's continue."
+
+  utter_deny:
+    - text: "No problem. Is there something else I can help with?"
+    - text: "That's fine. What would you like to do instead?"
+
+  utter_ask_order_status_without_number:
+    - text: "I'd be happy to check your order status. Could you please provide your order number?"
+
+  utter_ask_track_order_without_number:
+    - text: "I can help you track your order. Please provide your order number so I can look it up."
+
+  utter_return_policy:
+    - text: "Our return policy allows returns within 30 days of purchase. Items must be in original condition with tags attached. Please contact customer support to initiate a return."
+
+  utter_shipping_time:
+    - text: "Standard shipping typically takes 3-5 business days. Express shipping is available for 1-2 business day delivery."
+
+  utter_payment_methods:
+    - text: "We accept all major credit cards, PayPal, and Apple Pay."
+
+  utter_international_shipping:
+    - text: "Yes, we ship to most countries worldwide. International shipping typically takes 7-14 business days."
+
+  utter_order_cancel:
+    - text: "You can cancel an order within 24 hours of placing it. Please go to your order history and select 'Cancel Order' or contact our customer service team."
+
+  utter_create_account:
+    - text: "To create an account, click on the 'Register' button at the top right of our website. You'll need to provide your email address and create a password."
+
+  utter_reset_password:
+    - text: "To reset your password, click on 'Forgot Password' on the login page. We'll send you an email with instructions to create a new password."
+
+  utter_out_of_scope:
+    - text: "I'm sorry, I don't understand that question. Could you please rephrase it or ask something about orders, shipping, returns, or account information?"
+    - text: "That's beyond my current capabilities. I can help with questions about orders, shipping, returns, and account management. Could you ask something in those areas?"
+
+actions:
+  - action_check_order_status
+  - action_list_order_items
+  - action_get_user_orders
+  - utter_greet
+  - utter_goodbye
+  - utter_thank
+  - utter_affirm
+  - utter_deny
+  - utter_ask_order_status_without_number
+  - utter_ask_track_order_without_number
+  - utter_return_policy
+  - utter_shipping_time
+  - utter_payment_methods
+  - utter_international_shipping
+  - utter_order_cancel
+  - utter_create_account
+  - utter_reset_password
+  - utter_out_of_scope
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true 

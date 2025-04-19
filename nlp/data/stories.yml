@@ -1,0 +1,131 @@
+version: "3.1"
+
+stories:
+- story: greet and goodbye
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: goodbye
+  - action: utter_goodbye
+
+- story: greet and thank
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: thank
+  - action: utter_thank
+
+- story: ask return policy
+  steps:
+  - intent: ask_return_policy
+  - action: utter_return_policy
+  - intent: thank
+  - action: utter_thank
+
+- story: ask shipping time
+  steps:
+  - intent: ask_shipping_time
+  - action: utter_shipping_time
+
+- story: ask payment methods
+  steps:
+  - intent: ask_payment_methods
+  - action: utter_payment_methods
+
+- story: ask international shipping
+  steps:
+  - intent: ask_international_shipping
+  - action: utter_international_shipping
+
+- story: ask order cancel
+  steps:
+  - intent: ask_order_cancel
+  - action: utter_order_cancel
+
+- story: ask create account
+  steps:
+  - intent: ask_create_account
+  - action: utter_create_account
+
+- story: ask reset password
+  steps:
+  - intent: ask_reset_password
+  - action: utter_reset_password
+
+- story: out of scope
+  steps:
+  - intent: out_of_scope
+  - action: utter_out_of_scope
+
+- story: ask order status with number
+  steps:
+  - intent: ask_order_status
+    entities:
+    - order_number: "ORD123456"
+  - action: action_check_order_status
+
+- story: ask order status without number
+  steps:
+  - intent: ask_order_status
+  - action: utter_ask_order_status_without_number
+
+- story: ask track order with number
+  steps:
+  - intent: ask_track_order
+    entities:
+    - order_number: "ORD123456"
+  - action: action_check_order_status
+
+- story: ask track order without number
+  steps:
+  - intent: ask_track_order
+  - action: utter_ask_track_order_without_number
+
+- story: complete order status flow
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: ask_order_status
+  - action: utter_ask_order_status_without_number
+  - intent: ask_order_status
+    entities:
+    - order_number: "ORD123456"
+  - action: action_check_order_status
+  - intent: thank
+  - action: utter_thank
+  - intent: goodbye
+  - action: utter_goodbye
+
+- story: complete tracking flow
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: ask_track_order
+  - action: utter_ask_track_order_without_number
+  - intent: ask_track_order
+    entities:
+    - order_number: "ORD123456"
+  - action: action_check_order_status
+  - intent: thank
+  - action: utter_thank
+
+- story: ask order items
+  steps:
+  - intent: ask_order_status
+    entities:
+    - order_number: "ORD123456"
+  - action: action_check_order_status
+  - intent: ask_track_order
+    entities:
+    - order_number: "ORD123456"
+  - action: action_list_order_items
+
+- story: get user orders
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - action: action_get_user_orders
+  - intent: ask_order_status
+    entities:
+    - order_number: "ORD123456"
+  - action: action_check_order_status 

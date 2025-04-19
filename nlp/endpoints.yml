@@ -1,0 +1,17 @@
+action_endpoint:
+  url: "http://localhost:5055/webhook"
+
+# Remove the models section as it's not needed for local development
+# models:
+#   url: ${RASA_MODEL_SERVER:}
+#   wait_time_between_pulls: ${RASA_MODEL_PULL_INTERVAL:20}
+
+tracker_store:
+  type: SQL
+  dialect: "postgresql"
+  url: "localhost"
+  port: 5432
+  username: "postgres"
+  password: "postgres"
+  db: "ai_chatbot_new"
+  login_db: "ai_chatbot_new" 
