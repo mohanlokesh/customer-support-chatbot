@@ -128,4 +128,120 @@ stories:
   - intent: ask_order_status
     entities:
     - order_number: "ORD123456"
-  - action: action_check_order_status 
+  - action: action_check_order_status
+
+# New stories for order items, cancellation and password reset
+
+- story: ask order items with number
+  steps:
+  - intent: ask_order_items
+    entities:
+    - order_number: "ORD123456"
+  - action: action_list_order_items
+
+- story: ask order items without number
+  steps:
+  - intent: ask_order_items
+  - action: utter_ask_order_items_without_number
+  - intent: ask_order_items
+    entities:
+    - order_number: "ORD123456"
+  - action: action_list_order_items
+
+- story: cancel order with confirmation
+  steps:
+  - intent: request_cancel_order
+    entities:
+    - order_number: "ORD123456"
+  - action: action_cancel_order
+  - intent: confirm_cancel_order
+  - action: action_handle_cancel_confirmation
+
+- story: direct cancel with order number and confirmation
+  steps:
+  - intent: request_cancel_order
+    entities:
+    - order_number: "ORD-67690"
+  - action: action_cancel_order
+  - intent: affirm
+  - action: action_handle_cancel_confirmation
+
+- story: cancel after order status
+  steps:
+  - intent: ask_order_status
+    entities:
+    - order_number: "ORD-67690" 
+  - action: action_check_order_status
+  - intent: request_cancel_order
+  - action: action_cancel_order
+  - intent: confirm_cancel_order
+  - action: action_handle_cancel_confirmation
+
+- story: simple yes confirmation
+  steps:
+  - action: action_cancel_order
+  - intent: affirm
+  - action: action_handle_cancel_confirmation
+
+- story: cancel order without confirmation
+  steps:
+  - intent: request_cancel_order
+    entities:
+    - order_number: "ORD123456"
+  - action: action_cancel_order
+  - intent: deny
+  - action: action_handle_cancel_confirmation
+
+- story: cancel order without number
+  steps:
+  - intent: request_cancel_order
+  - action: utter_ask_order_status_without_number
+  - intent: ask_order_status
+    entities:
+    - order_number: "ORD123456"
+  - action: action_cancel_order
+  - intent: confirm_cancel_order
+  - action: action_handle_cancel_confirmation
+
+- story: reset password with email
+  steps:
+  - intent: ask_reset_password
+  - action: utter_ask_email_for_reset
+  - intent: provide_email
+    entities:
+    - email: "user@example.com"
+  - action: action_reset_password
+  - intent: thank
+  - action: utter_thank
+
+- story: reset password flow
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: ask_reset_password
+  - action: utter_ask_email_for_reset
+  - intent: provide_email
+    entities:
+    - email: "user@example.com"
+  - action: action_reset_password
+  - intent: thank
+  - action: utter_thank
+  - intent: goodbye
+  - action: utter_goodbye
+
+- story: full order cancellation flow
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: request_cancel_order
+  - action: utter_ask_order_status_without_number
+  - intent: request_cancel_order
+    entities:
+    - order_number: "ORD123456"
+  - action: action_cancel_order
+  - intent: confirm_cancel_order
+  - action: action_handle_cancel_confirmation
+  - intent: thank
+  - action: utter_thank
+  - intent: goodbye
+  - action: utter_goodbye 

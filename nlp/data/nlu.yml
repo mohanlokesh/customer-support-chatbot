@@ -327,4 +327,96 @@ nlu:
     - Who's going to win the Super Bowl?
     - How tall are you?
     - What's your opinion on climate change?
-    - Can we be friends? 
+    - Can we be friends?
+
+- intent: ask_order_items
+  examples: |
+    - What items are in my order?
+    - Show me what I ordered
+    - What's in order [ORD123456](order_number)?
+    - List the items in my order [AB-123-456](order_number)
+    - What did I buy in order [ORDER789](order_number)?
+    - Can you tell me what's in my order?
+    - I want to see items from order [ORD987654](order_number)
+    - What products are in order [ABC123](order_number)?
+    - Show order [ORD456789](order_number) contents
+    - What items did I purchase in [ORDER-XYZ](order_number)?
+    - List products in [OR789123](order_number)
+    - What's included in my order [123-ABC](order_number)?
+    - Items from my recent order [ORDER123](order_number)
+    - What did I order in [ORD456](order_number)?
+    - Details of items in [ABC-789](order_number)
+    - What are the contents of my order?
+    - Can you list everything in my order?
+    - Show me a breakdown of what I ordered
+    - What did I purchase exactly?
+    - I want to see what's in my package
+
+- intent: request_cancel_order
+  examples: |
+    - I want to cancel my order
+    - Please cancel order [ORD123456](order_number)
+    - Cancel my purchase
+    - I need to cancel order [ORDER-789](order_number)
+    - Cancel this order for me
+    - I don't want this order anymore
+    - Please cancel [AB-123-456](order_number) right away
+    - I've changed my mind, cancel order [ORD987654](order_number)
+    - Cancel my order [ORDER123](order_number) immediately
+    - I need to stop order [OR789123](order_number)
+    - Cancel my recent order
+    - Please cancel my purchase of order [ABC-789](order_number)
+    - I want to abort my order
+    - Can you please cancel [ORD456789](order_number)?
+    - I made a mistake, cancel order [ABC123](order_number)
+    - Cancel all my pending orders
+    - Stop processing my order
+    - I need this order cancelled
+    - Cancel order [123-ABC](order_number) asap
+    - Please help me cancel my order
+
+- intent: confirm_cancel_order
+  examples: |
+    - Yes, cancel the order
+    - Go ahead with the cancellation
+    - Yes, I'm sure
+    - Proceed with cancelling
+    - Yes, please cancel it
+    - I confirm the cancellation
+    - That's correct, cancel it
+    - Yes, I want to cancel
+    - Definitely cancel it
+    - Please proceed with cancellation
+    - Yes, that's what I want
+    - Confirm cancellation
+    - Yes, I'm certain
+    - Cancel it for sure
+    - Yes, go ahead
+    - 100% yes, cancel it
+    - I'm confirming the cancel
+    - Yes, I don't want the order
+    - Please cancel as discussed
+    - Yes, that's right, cancel the order
+
+- intent: provide_email
+  examples: |
+    - My email is [user@example.com](email)
+    - [customer@gmail.com](email)
+    - Use [john.doe@company.com](email)
+    - It's [mary123@outlook.com](email)
+    - [business_contact@yahoo.com](email)
+    - Email address is [support@domain.net](email)
+    - [firstname.lastname@provider.org](email)
+    - You can use [myname@work.com](email)
+    - Send it to [personal.email@domain.co](email)
+    - [username@mail.edu](email) is my email
+    - The email is [contact@business.io](email)
+    - [customer.service@shop.com](email)
+    - Please use [myemail@provider.net](email)
+    - [john1234@domain.com](email)
+    - [marketing@company.org](email) is the one
+    - This is my email: [contact@website.com](email)
+    - [sales@business.com](email)
+    - Use this email: [user.name@domain.co.uk](email)
+    - My account email is [account@service.app](email)
+    - [info@company.biz](email) 

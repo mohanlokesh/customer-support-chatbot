@@ -17,6 +17,10 @@ intents:
   - ask_create_account
   - ask_reset_password
   - out_of_scope
+  - ask_order_items
+  - request_cancel_order
+  - confirm_cancel_order
+  - provide_email
 
 entities:
   - order_number
@@ -42,6 +46,11 @@ slots:
     mappings:
     - type: from_entity
       entity: product_name
+  confirm_cancel:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: custom
 
 responses:
   utter_greet:
@@ -86,22 +95,31 @@ responses:
     - text: "Yes, we ship to most countries worldwide. International shipping typically takes 7-14 business days."
 
   utter_order_cancel:
-    - text: "You can cancel an order within 24 hours of placing it. Please go to your order history and select 'Cancel Order' or contact our customer service team."
+    - text: "You can cancel an order within 24 hours of placing it if it hasn't shipped yet. Would you like me to help you cancel an order?"
 
   utter_create_account:
     - text: "To create an account, click on the 'Register' button at the top right of our website. You'll need to provide your email address and create a password."
 
   utter_reset_password:
-    - text: "To reset your password, click on 'Forgot Password' on the login page. We'll send you an email with instructions to create a new password."
+    - text: "I can help you reset your password. Could you please provide me with your email address?"
 
   utter_out_of_scope:
     - text: "I'm sorry, I don't understand that question. Could you please rephrase it or ask something about orders, shipping, returns, or account information?"
     - text: "That's beyond my current capabilities. I can help with questions about orders, shipping, returns, and account management. Could you ask something in those areas?"
 
+  utter_ask_order_items_without_number:
+    - text: "I'd be happy to check the items in your order. Could you please provide your order number?"
+
+  utter_ask_email_for_reset:
+    - text: "To reset your password, I'll need your email address. What email should I use for the password reset?"
+
 actions:
   - action_check_order_status
   - action_list_order_items
   - action_get_user_orders
+  - action_cancel_order
+  - action_handle_cancel_confirmation
+  - action_reset_password
   - utter_greet
   - utter_goodbye
   - utter_thank
@@ -117,6 +135,8 @@ actions:
   - utter_create_account
   - utter_reset_password
   - utter_out_of_scope
+  - utter_ask_order_items_without_number
+  - utter_ask_email_for_reset
 
 session_config:
   session_expiration_time: 60

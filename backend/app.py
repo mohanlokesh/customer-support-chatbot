@@ -506,6 +506,115 @@ def get_order_status(order_number):
     finally:
         db.close()
 
+# Add a new endpoint for canceling orders
+@app.route("/api/orders/<string:order_number>/cancel", methods=["POST"])
+@jwt_required()
+def cancel_order(order_number):
+    """
+    Cancel a specific order
+    """
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
+    
+    db = SessionLocal()
+    try:
+        # Check if order exists and belongs to user
+        order = db.query(Order).filter(
+            Order.order_number == order_number,
+            Order.user_id == user_id
+        ).first()
+        
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+        
+        # Check if order can be cancelled
+        if order.status.value in ["delivered", "cancelled"]:
+            return jsonify({"error": f"Order cannot be cancelled because it is already {order.status.value}"}), 400
+        
+        if order.status.value == "shipped":
+            return jsonify({"error": "Order cannot be cancelled because it has already been shipped. Please initiate a return instead."}), 400
+        
+        # Update order status to cancelled
+        from database.models import OrderStatus
+        order.status = OrderStatus.CANCELLED
+        db.commit()
+        
+        return jsonify({
+            "message": f"Order {order_number} has been successfully cancelled",
+            "order_number": order.order_number,
+            "status": order.status.value
+        }), 200
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error cancelling order: {str(e)}")
+        return jsonify({"error": "Failed to cancel order"}), 500
+    finally:
+        db.close()
+
+# Add a new endpoint for password reset
+@app.route("/api/auth/reset-password", methods=["POST"])
+@jwt_required(optional=True)
+def reset_password():
+    """
+    Reset user password and send temporary password
+    This endpoint allows both authenticated and unauthenticated requests
+    """
+    data = request.get_json()
+    
+    if not data.get("email"):
+        return jsonify({"error": "Email is required"}), 400
+    
+    email = data.get("email")
+    temp_password = data.get("temp_password")  # In a real app, this would be generated server-side
+    
+    if not temp_password:
+        # Generate a temporary password if not provided
+        import string
+        import random
+        chars = string.ascii_letters + string.digits
+        temp_password = ''.join(random.choice(chars) for _ in range(12))
+    
+    db = SessionLocal()
+    try:
+        # Find user by email
+        user = db.query(User).filter(User.email == email).first()
+        
+        if not user:
+            return jsonify({"error": "User not found with that email address"}), 404
+        
+        # Hash the temporary password
+        hashed_password = bcrypt.hashpw(temp_password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+        
+        # Update user's password
+        user.password_hash = hashed_password
+        db.commit()
+        
+        # In a real application, send an email with the temporary password
+        # For demo purposes, we'll just return success
+        
+        return jsonify({
+            "message": "Password has been reset successfully. Check your email for the temporary password.",
+            # Don't include the temporary password in the response in a real app
+            # We're including it here for demonstration purposes only
+            "temp_password": temp_password
+        }), 200
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error resetting password: {str(e)}")
+        return jsonify({"error": "Failed to reset password"}), 500
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     port = int(os.getenv("BACKEND_PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True) 
