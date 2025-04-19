@@ -24,8 +24,17 @@ def chat():
     """
     Process a chat message and get a response from Rasa
     """
-    # Convert string user_id back to integer
-    user_id = int(get_jwt_identity())
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
+    
     data = request.get_json()
     
     if not data.get("message") or not data.get("conversation_id"):
@@ -132,14 +141,25 @@ def chat():
     finally:
         db.close()
 
+# This endpoint is now redundant since we added it to app.py
+# Keeping it here for reference but commenting it out
+"""
 @chatbot_bp.route("/api/orders/<string:order_number>/status", methods=["GET"])
 @jwt_required()
 def get_order_status(order_number):
-    """
+    \"""
     Get the status of a specific order (used by Rasa action server)
-    """
-    # Convert string user_id back to integer
-    user_id = int(get_jwt_identity())
+    \"""
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
     
     db = SessionLocal()
     try:
@@ -163,6 +183,7 @@ def get_order_status(order_number):
         return jsonify({"error": "Failed to retrieve order status"}), 500
     finally:
         db.close()
+"""
 
 def find_similar_question(user_question, threshold=0.5):
     """

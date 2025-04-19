@@ -7,6 +7,7 @@ from typing import List, Dict, Any
 import streamlit as st
 from streamlit_chat import message
 from dotenv import load_dotenv
+import extra_streamlit_components as stx
 
 # Load environment variables
 load_dotenv()
@@ -21,7 +22,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Initialize session state
+# Initialize all session state variables first
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -33,6 +34,12 @@ if "user_id" not in st.session_state:
 
 if "token" not in st.session_state:
     st.session_state.token = None
+
+if "username" not in st.session_state:
+    st.session_state.username = None
+
+# Get cookie manager instance
+cookie_manager = stx.CookieManager()
 
 def make_api_request(endpoint: str, method: str = "GET", data: Dict = None, token: str = None) -> Dict:
     """
@@ -56,6 +63,45 @@ def make_api_request(endpoint: str, method: str = "GET", data: Dict = None, toke
     
     return response.json()
 
+def validate_token(token):
+    """
+    Validate the token and retrieve user information.
+    Returns True if token is valid, False otherwise.
+    """
+    if not token:
+        return False
+    
+    # Make a request to a protected endpoint to validate the token
+    response = make_api_request("/api/conversations", method="GET", token=token)
+    if "error" in response:
+        return False
+    
+    # Get user info from backend
+    try:
+        # We can extract the user ID from JWT payload, but for security it's better to ask the backend
+        # This would require a new endpoint in a real app, but for now let's assume the conversations endpoint works
+        return True
+    except Exception as e:
+        st.error(f"Error validating token: {str(e)}")
+        return False
+
+# Try to load token from cookie
+token = cookie_manager.get(cookie="auth_token")
+if token and validate_token(token):
+    st.session_state.token = token
+    # Get username from cookie
+    username = cookie_manager.get(cookie="username")
+    if username:
+        st.session_state.username = username
+    user_id = cookie_manager.get(cookie="user_id")
+    if user_id:
+        st.session_state.user_id = user_id
+elif token:
+    # Token is invalid, clear it
+    cookie_manager.delete(cookie="auth_token")
+    cookie_manager.delete(cookie="username")
+    cookie_manager.delete(cookie="user_id")
+
 def login(username: str, password: str) -> bool:
     """
     Authenticate user with the backend.
@@ -70,6 +116,13 @@ def login(username: str, password: str) -> bool:
     st.session_state.user_id = response["user"]["id"]
     st.session_state.token = response["access_token"]
     st.session_state.username = response["user"]["username"]
+    
+    # Store token and user info in cookies
+    expires = datetime.datetime.now() + datetime.timedelta(hours=1)
+    cookie_manager.set(cookie="auth_token", val=response["access_token"], expires_at=expires, key="login_token")
+    cookie_manager.set(cookie="username", val=response["user"]["username"], expires_at=expires, key="login_username")
+    cookie_manager.set(cookie="user_id", val=str(response["user"]["id"]), expires_at=expires, key="login_user_id")
+    
     return True
 
 def register(username: str, email: str, password: str) -> bool:
@@ -86,6 +139,13 @@ def register(username: str, email: str, password: str) -> bool:
     st.session_state.user_id = response["user"]["id"]
     st.session_state.token = response["access_token"]
     st.session_state.username = response["user"]["username"]
+    
+    # Store token and user info in cookies
+    expires = datetime.datetime.now() + datetime.timedelta(hours=1)
+    cookie_manager.set(cookie="auth_token", val=response["access_token"], expires_at=expires, key="register_token")
+    cookie_manager.set(cookie="username", val=response["user"]["username"], expires_at=expires, key="register_username")
+    cookie_manager.set(cookie="user_id", val=str(response["user"]["id"]), expires_at=expires, key="register_user_id")
+    
     return True
 
 def create_conversation() -> int:
@@ -213,8 +273,15 @@ def display_chat_interface():
         
         # Logout button
         if st.button("Logout"):
+            # Clear session state
             for key in list(st.session_state.keys()):
                 del st.session_state[key]
+            
+            # Delete cookies with unique keys
+            cookie_manager.delete(cookie="auth_token", key="logout_token")
+            cookie_manager.delete(cookie="username", key="logout_username")
+            cookie_manager.delete(cookie="user_id", key="logout_user_id")
+            
             st.rerun()
     
     # Main chat container
@@ -246,8 +313,8 @@ def main():
     """
     Main function to run the Streamlit app.
     """
-    # Check if user is logged in
-    if st.session_state.token:
+    # Use dict-style access with get() for safety
+    if st.session_state.get("token"):
         display_chat_interface()
     else:
         display_login_form()

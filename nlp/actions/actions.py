@@ -3,11 +3,16 @@ import logging
 import os
 import requests
 from typing import Any, Dict, List, Text
-from datetime import datetime
+from datetime import datetime, timedelta
+import jwt
+from dotenv import load_dotenv
 
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -15,6 +20,35 @@ logger = logging.getLogger(__name__)
 
 # Backend API configuration
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:5000")
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super-secret-key-change-in-production")
+
+def get_auth_token(user_id):
+    """
+    Generate a JWT token for the Rasa actions server to authenticate with the backend.
+    This is a simplified version - in production, you'd use a more secure approach.
+    """
+    try:
+        # Create a JWT token with the proper claims required by Flask-JWT-Extended
+        now = datetime.utcnow()
+        token_data = {
+            "sub": str(user_id),  # 'sub' claim is required by Flask-JWT-Extended
+            "iat": now,
+            "nbf": now,
+            "jti": str(now.timestamp()),
+            "exp": now + timedelta(hours=1),
+            "fresh": False,
+            "type": "access"
+        }
+        
+        token = jwt.encode(
+            token_data,
+            JWT_SECRET_KEY,
+            algorithm="HS256"
+        )
+        return token
+    except Exception as e:
+        logger.error(f"Error generating JWT token: {str(e)}")
+        return None
 
 class ActionCheckOrderStatus(Action):
     """
@@ -39,11 +73,16 @@ class ActionCheckOrderStatus(Action):
             # Get user ID from sender ID (requires user authentication in the backend)
             user_id = tracker.sender_id
             
-            # Get JWT token (in a real implementation, this would be handled by the frontend/middleware)
-            # For demo purposes, we're assuming the user is already authenticated
-            # The user_id from sender is already a string from the chat API
+            # Generate a valid JWT token for the backend
+            token = get_auth_token(user_id)
+            
+            if not token:
+                dispatcher.utter_message(text="I'm having trouble with authentication. Please try again later.")
+                return []
+            
+            # Create authorization header with the token
             headers = {
-                "Authorization": f"Bearer {user_id}"
+                "Authorization": f"Bearer {token}"
             }
             
             # Call backend API to get order status
@@ -143,9 +182,16 @@ class ActionListOrderItems(Action):
             # Get user ID from sender ID
             user_id = tracker.sender_id
             
-            # The user_id from sender is already a string from the chat API
+            # Generate a valid JWT token for the backend
+            token = get_auth_token(user_id)
+            
+            if not token:
+                dispatcher.utter_message(text="I'm having trouble with authentication. Please try again later.")
+                return []
+            
+            # Create authorization header with the token
             headers = {
-                "Authorization": f"Bearer {user_id}"
+                "Authorization": f"Bearer {token}"
             }
             
             # Call backend API to get order details
@@ -216,9 +262,16 @@ class ActionGetUserOrders(Action):
             # Get user ID from sender ID
             user_id = tracker.sender_id
             
-            # The user_id from sender is already a string from the chat API
+            # Generate a valid JWT token for the backend
+            token = get_auth_token(user_id)
+            
+            if not token:
+                dispatcher.utter_message(text="I'm having trouble with authentication. Please try again later.")
+                return []
+            
+            # Create authorization header with the token
             headers = {
-                "Authorization": f"Bearer {user_id}"
+                "Authorization": f"Bearer {token}"
             }
             
             # Call backend API to get all user orders

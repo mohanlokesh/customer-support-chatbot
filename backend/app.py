@@ -26,6 +26,41 @@ app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "super-secret-key-cha
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 jwt = JWTManager(app)
 
+# JWT callback handlers
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    """
+    Function that takes whatever is passed in as the identity
+    when creating JWTs and converts it to a JSON serializable format.
+    """
+    return str(user)
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    """
+    Function that is called whenever a protected endpoint is accessed.
+    It takes the JWT data and returns the corresponding user object.
+    """
+    user_id = jwt_data["sub"]
+    
+    # Handle both string IDs (from Rasa) and numeric IDs (from frontend)
+    try:
+        # Try to convert to integer for database lookup
+        user_id_int = int(user_id)
+        
+        db = SessionLocal()
+        try:
+            user = db.query(User).filter(User.id == user_id_int).first()
+            db.close()
+            return user
+        except:
+            db.close()
+            return None
+    except ValueError:
+        # If it's not a valid integer, it might be a custom token from Rasa
+        # For Rasa actions, we'll just return the ID as is
+        return user_id
+
 # Configure logging
 logger.add("logs/backend.log", rotation="500 MB", level="INFO")
 
@@ -146,8 +181,16 @@ def get_conversations():
     """
     Get all conversations for the current user
     """
-    # Convert string user_id back to integer
-    user_id = int(get_jwt_identity())
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
     
     db = SessionLocal()
     try:
@@ -183,8 +226,16 @@ def create_conversation():
     """
     Create a new conversation
     """
-    # Convert string user_id back to integer
-    user_id = int(get_jwt_identity())
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
     
     db = SessionLocal()
     try:
@@ -211,8 +262,16 @@ def get_messages(conversation_id):
     """
     Get all messages for a specific conversation
     """
-    # Convert string user_id back to integer
-    user_id = int(get_jwt_identity())
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
     
     db = SessionLocal()
     try:
@@ -252,8 +311,17 @@ def create_message(conversation_id):
     """
     Create a new message in a conversation
     """
-    # Convert string user_id back to integer
-    user_id = int(get_jwt_identity())
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
+    
     data = request.get_json()
     
     if not data.get("content"):
@@ -300,8 +368,16 @@ def get_orders():
     """
     Get all orders for the current user
     """
-    # Convert string user_id back to integer
-    user_id = int(get_jwt_identity())
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
     
     db = SessionLocal()
     try:
@@ -334,8 +410,16 @@ def get_order_details(order_number):
     """
     Get details for a specific order
     """
-    # Convert string user_id back to integer
-    user_id = int(get_jwt_identity())
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
     
     db = SessionLocal()
     try:
@@ -378,6 +462,47 @@ def get_order_details(order_number):
     except Exception as e:
         logger.error(f"Error retrieving order details: {str(e)}")
         return jsonify({"error": "Failed to retrieve order details"}), 500
+    finally:
+        db.close()
+
+# Add a new endpoint specifically for the Rasa action server to get order status
+@app.route("/api/orders/<string:order_number>/status", methods=["GET"])
+@jwt_required()
+def get_order_status(order_number):
+    """
+    Get the status of a specific order (used by Rasa action server)
+    """
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible (coming from frontend)
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # If not a valid integer, assume it's from Rasa actions
+        # For demo purposes, we'll use a mock user ID
+        user_id = 1  # Use a demo user ID
+    
+    db = SessionLocal()
+    try:
+        order = db.query(Order).filter(
+            Order.order_number == order_number,
+            Order.user_id == user_id
+        ).first()
+        
+        if not order:
+            return jsonify({"error": "Order not found"}), 404
+        
+        return jsonify({
+            "order_number": order.order_number,
+            "status": order.status.value,
+            "ordered_at": order.ordered_at.isoformat(),
+            "estimated_delivery": order.estimated_delivery.isoformat() if order.estimated_delivery else None
+        }), 200
+        
+    except Exception as e:
+        logger.error(f"Error retrieving order status: {str(e)}")
+        return jsonify({"error": "Failed to retrieve order status"}), 500
     finally:
         db.close()
 
