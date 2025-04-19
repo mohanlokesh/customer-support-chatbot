@@ -28,6 +28,7 @@ class User(Base):
     # Relationships
     conversations = relationship("Conversation", back_populates="user", cascade="all, delete-orphan")
     orders = relationship("Order", back_populates="user", cascade="all, delete-orphan")
+    cart = relationship("Cart", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(id={self.id}, username='{self.username}')>"
@@ -111,6 +112,7 @@ class Company(Base):
 
     # Relationships
     support_data = relationship("SupportData", back_populates="company", cascade="all, delete-orphan")
+    products = relationship("Product", back_populates="company", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Company(id={self.id}, name='{self.name}')>"
@@ -130,4 +132,56 @@ class SupportData(Base):
     company = relationship("Company", back_populates="support_data")
 
     def __repr__(self):
-        return f"<SupportData(id={self.id}, category='{self.category}')>" 
+        return f"<SupportData(id={self.id}, category='{self.category}')>"
+
+class Product(Base):
+    __tablename__ = "products"
+    
+    id = Column(Integer, primary_key=True)
+    company_id = Column(Integer, ForeignKey("companies.id"))
+    name = Column(String(100), nullable=False)
+    description = Column(Text, nullable=True)
+    price = Column(Float, nullable=False)
+    stock_quantity = Column(Integer, default=0)
+    image_url = Column(String(255), nullable=True)
+    category = Column(String(50), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    company = relationship("Company", back_populates="products")
+    cart_items = relationship("CartItem", back_populates="product", cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f"<Product(id={self.id}, name='{self.name}', price={self.price})>"
+
+class Cart(Base):
+    __tablename__ = "carts"
+    
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User", back_populates="cart")
+    cart_items = relationship("CartItem", back_populates="cart", cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f"<Cart(id={self.id}, user_id={self.user_id})>"
+
+class CartItem(Base):
+    __tablename__ = "cart_items"
+    
+    id = Column(Integer, primary_key=True)
+    cart_id = Column(Integer, ForeignKey("carts.id"))
+    product_id = Column(Integer, ForeignKey("products.id"))
+    quantity = Column(Integer, default=1)
+    added_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    cart = relationship("Cart", back_populates="cart_items")
+    product = relationship("Product", back_populates="cart_items")
+    
+    def __repr__(self):
+        return f"<CartItem(id={self.id}, product_id={self.product_id}, quantity={self.quantity})>" 

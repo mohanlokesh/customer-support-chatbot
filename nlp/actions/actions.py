@@ -570,4 +570,401 @@ class ActionResetPassword(Action):
             logger.error(f"Unexpected error in action_reset_password: {str(e)}")
             dispatcher.utter_message(text="Sorry, something went wrong while trying to reset your password. "
                                     "Please try again later or use the 'Forgot Password' option on the login page.")
-            return [SlotSet("email", None)] 
+            return [SlotSet("email", None)]
+
+class ActionGetProductDetails(Action):
+    """
+    Action to get details about a specific product.
+    """
+    def name(self) -> Text:
+        return "action_get_product_details"
+
+    def run(self,
+            dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        # Get the product name or ID from the slot
+        product_name = tracker.get_slot("product_name")
+        product_id = tracker.get_slot("product_id")
+        
+        if not product_name and not product_id:
+            dispatcher.utter_message(response="utter_product_details_without_name")
+            return []
+        
+        try:
+            # Generate a valid JWT token for the backend
+            user_id = tracker.sender_id
+            token = get_auth_token(user_id)
+            
+            if not token:
+                dispatcher.utter_message(text="I'm having trouble with authentication. Please try again later.")
+                return []
+            
+            headers = {
+                "Authorization": f"Bearer {token}"
+            }
+            
+            # If we have product ID, use it directly
+            if product_id:
+                response = requests.get(
+                    f"{BACKEND_URL}/api/products/{product_id}",
+                    headers=headers
+                )
+                
+                if response.status_code == 200:
+                    product = response.json()
+                    
+                    # Format the response
+                    msg = f"Here are the details for {product['name']}:\n\n"
+                    msg += f"Price: ${product['price']:.2f}\n"
+                    msg += f"Description: {product['description']}\n"
+                    msg += f"Category: {product['category']}\n"
+                    msg += f"In Stock: {product['stock_quantity']}"
+                    
+                    dispatcher.utter_message(text=msg)
+                    return []
+                elif response.status_code == 404:
+                    dispatcher.utter_message(text=f"I couldn't find a product with that ID. Could you try with a different product?")
+                    return [SlotSet("product_id", None)]
+            
+            # If we only have the name, search for it
+            if product_name:
+                response = requests.get(
+                    f"{BACKEND_URL}/api/products?search={product_name}",
+                    headers=headers
+                )
+                
+                if response.status_code == 200:
+                    products = response.json().get("products", [])
+                    
+                    if not products:
+                        dispatcher.utter_message(text=f"I couldn't find any products matching '{product_name}'. Could you try with a different product name?")
+                        return [SlotSet("product_name", None)]
+                    
+                    if len(products) == 1:
+                        # If only one product is found, show its details
+                        product = products[0]
+                        
+                        # Format the response
+                        msg = f"Here are the details for {product['name']}:\n\n"
+                        msg += f"Price: ${product['price']:.2f}\n"
+                        msg += f"Description: {product['description']}\n"
+                        msg += f"Category: {product['category']}\n"
+                        msg += f"In Stock: {product['stock_quantity']}"
+                        
+                        dispatcher.utter_message(text=msg)
+                        return [SlotSet("product_id", product["id"])]
+                    else:
+                        # If multiple products are found, list them
+                        msg = f"I found {len(products)} products matching '{product_name}':\n\n"
+                        
+                        for i, product in enumerate(products[:5]):  # Limit to 5 products
+                            msg += f"{i+1}. {product['name']} - ${product['price']:.2f}\n"
+                        
+                        if len(products) > 5:
+                            msg += f"\nAnd {len(products) - 5} more products."
+                        
+                        msg += "\n\nCould you be more specific about which one you're interested in?"
+                        
+                        dispatcher.utter_message(text=msg)
+                        return []
+            
+            # If we get here, something went wrong
+            dispatcher.utter_message(text="I'm sorry, I couldn't find information about that product. Could you try with a different product?")
+            return [SlotSet("product_name", None), SlotSet("product_id", None)]
+            
+        except requests.RequestException as e:
+            logger.error(f"Error connecting to backend: {str(e)}")
+            dispatcher.utter_message(text="I'm having trouble connecting to our product system. Please try again later or check the Products tab.")
+            return []
+        except Exception as e:
+            logger.error(f"Unexpected error in action_get_product_details: {str(e)}")
+            dispatcher.utter_message(text="Sorry, something went wrong while checking product details. Please try again later.")
+            return []
+
+class ActionAddToCart(Action):
+    """
+    Action to add a product to the cart.
+    """
+    def name(self) -> Text:
+        return "action_add_to_cart"
+
+    def run(self,
+            dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        # Get the product name or ID from the slot
+        product_name = tracker.get_slot("product_name")
+        product_id = tracker.get_slot("product_id")
+        quantity = tracker.get_slot("quantity")
+        
+        # Default quantity to 1 if not specified
+        if not quantity:
+            quantity = 1
+        else:
+            try:
+                quantity = int(quantity)
+            except ValueError:
+                quantity = 1
+        
+        if not product_name and not product_id:
+            dispatcher.utter_message(response="utter_add_to_cart_without_product")
+            return []
+        
+        try:
+            # Generate a valid JWT token for the backend
+            user_id = tracker.sender_id
+            token = get_auth_token(user_id)
+            
+            if not token:
+                dispatcher.utter_message(text="I'm having trouble with authentication. Please try again later.")
+                return []
+            
+            headers = {
+                "Authorization": f"Bearer {token}"
+            }
+            
+            # If we have product ID, add it directly
+            if product_id:
+                response = requests.post(
+                    f"{BACKEND_URL}/api/cart/items",
+                    headers=headers,
+                    json={"product_id": product_id, "quantity": quantity}
+                )
+                
+                if response.status_code == 200:
+                    product_info = None
+                    for item in response.json().get("items", []):
+                        if str(item.get("product_id")) == str(product_id):
+                            product_info = item
+                            break
+                    
+                    if product_info:
+                        dispatcher.utter_message(text=f"I've added {quantity} x {product_info['name']} to your cart.")
+                    else:
+                        dispatcher.utter_message(text=f"I've added the item to your cart.")
+                    
+                    return []
+                elif response.status_code == 400:
+                    error_msg = response.json().get("error", "")
+                    if "stock" in error_msg.lower():
+                        dispatcher.utter_message(text=f"I'm sorry, there isn't enough stock available for that product.")
+                    else:
+                        dispatcher.utter_message(text=f"I couldn't add that item to your cart: {error_msg}")
+                    return []
+                elif response.status_code == 404:
+                    dispatcher.utter_message(text=f"I couldn't find a product with that ID. Could you try with a different product?")
+                    return [SlotSet("product_id", None)]
+            
+            # If we only have the name, search for it
+            if product_name:
+                # First, search for the product
+                search_response = requests.get(
+                    f"{BACKEND_URL}/api/products?search={product_name}",
+                    headers=headers
+                )
+                
+                if search_response.status_code == 200:
+                    products = search_response.json().get("products", [])
+                    
+                    if not products:
+                        dispatcher.utter_message(text=f"I couldn't find any products matching '{product_name}'. Could you try with a different product name?")
+                        return [SlotSet("product_name", None)]
+                    
+                    if len(products) == 1:
+                        # If only one product is found, add it to cart
+                        product = products[0]
+                        
+                        add_response = requests.post(
+                            f"{BACKEND_URL}/api/cart/items",
+                            headers=headers,
+                            json={"product_id": product["id"], "quantity": quantity}
+                        )
+                        
+                        if add_response.status_code == 200:
+                            dispatcher.utter_message(text=f"I've added {quantity} x {product['name']} to your cart.")
+                            return [SlotSet("product_id", product["id"])]
+                        elif add_response.status_code == 400:
+                            error_msg = add_response.json().get("error", "")
+                            if "stock" in error_msg.lower():
+                                dispatcher.utter_message(text=f"I'm sorry, there isn't enough stock available for {product['name']}.")
+                            else:
+                                dispatcher.utter_message(text=f"I couldn't add {product['name']} to your cart: {error_msg}")
+                            return []
+                    else:
+                        # If multiple products are found, ask for clarification
+                        msg = f"I found {len(products)} products matching '{product_name}':\n\n"
+                        
+                        for i, product in enumerate(products[:5]):  # Limit to 5 products
+                            msg += f"{i+1}. {product['name']} - ${product['price']:.2f}\n"
+                        
+                        if len(products) > 5:
+                            msg += f"\nAnd {len(products) - 5} more products."
+                        
+                        msg += "\n\nCould you specify which one you'd like to add to your cart?"
+                        
+                        dispatcher.utter_message(text=msg)
+                        return []
+            
+            # If we get here, something went wrong
+            dispatcher.utter_message(text="I'm sorry, I couldn't add that product to your cart. Could you try using the Products tab to browse and add items?")
+            return []
+            
+        except requests.RequestException as e:
+            logger.error(f"Error connecting to backend: {str(e)}")
+            dispatcher.utter_message(text="I'm having trouble connecting to our cart system. Please try again later or use the Products tab.")
+            return []
+        except Exception as e:
+            logger.error(f"Unexpected error in action_add_to_cart: {str(e)}")
+            dispatcher.utter_message(text="Sorry, something went wrong while adding to cart. Please try again later.")
+            return []
+
+class ActionRemoveFromCart(Action):
+    """
+    Action to remove a product from the cart.
+    """
+    def name(self) -> Text:
+        return "action_remove_from_cart"
+
+    def run(self,
+            dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        # Get the product name from the slot
+        product_name = tracker.get_slot("product_name")
+        
+        if not product_name:
+            dispatcher.utter_message(response="utter_remove_from_cart_without_product")
+            return []
+        
+        try:
+            # Generate a valid JWT token for the backend
+            user_id = tracker.sender_id
+            token = get_auth_token(user_id)
+            
+            if not token:
+                dispatcher.utter_message(text="I'm having trouble with authentication. Please try again later.")
+                return []
+            
+            headers = {
+                "Authorization": f"Bearer {token}"
+            }
+            
+            # First, get the cart to find the item to remove
+            cart_response = requests.get(
+                f"{BACKEND_URL}/api/cart",
+                headers=headers
+            )
+            
+            if cart_response.status_code == 200:
+                cart_items = cart_response.json().get("items", [])
+                
+                if not cart_items:
+                    dispatcher.utter_message(text="Your cart is currently empty.")
+                    return []
+                
+                # Try to find the item by name (case-insensitive partial match)
+                matching_items = []
+                for item in cart_items:
+                    if product_name.lower() in item["name"].lower():
+                        matching_items.append(item)
+                
+                if not matching_items:
+                    dispatcher.utter_message(text=f"I couldn't find '{product_name}' in your cart. Here's what's currently in your cart:")
+                    
+                    # List the items in the cart
+                    msg = ""
+                    for item in cart_items:
+                        msg += f"• {item['quantity']} x {item['name']}\n"
+                    
+                    dispatcher.utter_message(text=msg)
+                    return []
+                
+                if len(matching_items) == 1:
+                    # If only one matching item, remove it
+                    item = matching_items[0]
+                    
+                    remove_response = requests.delete(
+                        f"{BACKEND_URL}/api/cart/items/{item['cart_item_id']}",
+                        headers=headers
+                    )
+                    
+                    if remove_response.status_code == 200:
+                        dispatcher.utter_message(text=f"I've removed {item['name']} from your cart.")
+                        return []
+                    else:
+                        dispatcher.utter_message(text="I had trouble removing that item from your cart. Please try using the Cart tab to manage your items.")
+                        return []
+                else:
+                    # Multiple matching items, ask for clarification
+                    msg = f"I found multiple items in your cart matching '{product_name}':\n\n"
+                    
+                    for i, item in enumerate(matching_items):
+                        msg += f"{i+1}. {item['name']} (Quantity: {item['quantity']})\n"
+                    
+                    msg += "\nPlease specify which one you'd like to remove, or use the Cart tab to manage your items."
+                    
+                    dispatcher.utter_message(text=msg)
+                    return []
+            else:
+                dispatcher.utter_message(text="I had trouble accessing your cart. Please try using the Cart tab to manage your items.")
+                return []
+            
+        except requests.RequestException as e:
+            logger.error(f"Error connecting to backend: {str(e)}")
+            dispatcher.utter_message(text="I'm having trouble connecting to our cart system. Please try again later or use the Cart tab.")
+            return []
+        except Exception as e:
+            logger.error(f"Unexpected error in action_remove_from_cart: {str(e)}")
+            dispatcher.utter_message(text="Sorry, something went wrong while removing from cart. Please try again later.")
+            return []
+
+class ActionClearCart(Action):
+    """
+    Action to clear all items from the cart.
+    """
+    def name(self) -> Text:
+        return "action_clear_cart"
+
+    def run(self,
+            dispatcher: CollectingDispatcher,
+            tracker: Tracker,
+            domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        
+        try:
+            # Generate a valid JWT token for the backend
+            user_id = tracker.sender_id
+            token = get_auth_token(user_id)
+            
+            if not token:
+                dispatcher.utter_message(text="I'm having trouble with authentication. Please try again later.")
+                return []
+            
+            headers = {
+                "Authorization": f"Bearer {token}"
+            }
+            
+            # Clear the cart
+            response = requests.post(
+                f"{BACKEND_URL}/api/cart/clear",
+                headers=headers
+            )
+            
+            if response.status_code == 200:
+                dispatcher.utter_message(text="I've cleared all items from your cart.")
+                return []
+            else:
+                dispatcher.utter_message(text="I had trouble clearing your cart. Please try using the Cart tab to manage your items.")
+                return []
+            
+        except requests.RequestException as e:
+            logger.error(f"Error connecting to backend: {str(e)}")
+            dispatcher.utter_message(text="I'm having trouble connecting to our cart system. Please try again later or use the Cart tab.")
+            return []
+        except Exception as e:
+            logger.error(f"Unexpected error in action_clear_cart: {str(e)}")
+            dispatcher.utter_message(text="Sorry, something went wrong while clearing your cart. Please try again later.")
+            return [] 

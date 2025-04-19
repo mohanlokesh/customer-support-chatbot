@@ -1,5 +1,5 @@
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
@@ -7,11 +7,12 @@ from dotenv import load_dotenv
 import bcrypt
 from loguru import logger
 import sys
+from sqlalchemy import or_
 
 # Import database components
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from database.config import SessionLocal
-from database.models import User, Conversation, Message, Order, OrderItem
+from database.models import User, Conversation, Message, Order, OrderItem, Product, Cart, CartItem
 from backend.chatbot_api import chatbot_bp
 
 # Load environment variables
@@ -151,7 +152,6 @@ def login():
             return jsonify({"error": "Invalid username or password"}), 401
         
         # Update last login timestamp
-        from datetime import datetime
         user.last_login = datetime.utcnow()
         db.commit()
         
@@ -620,12 +620,121 @@ def reset_password():
 @jwt_required()
 def generate_orders_api():
     """
-    Generate new orders for specified users or all users
+    Generate test orders via API
     """
-    # Admin-only endpoint (for demonstration purposes, we're using a simple role check)
-    # In a production environment, use proper role-based access control
-    from database.models import User
+    # Implementation details here...
+
+# Product related endpoints
+@app.route("/api/products", methods=["GET"])
+def get_products():
+    """
+    Get all products with optional filtering
+    """
+    # Get query parameters for filtering
+    category = request.args.get("category")
+    search = request.args.get("search")
     
+    db = SessionLocal()
+    try:
+        # Build the query
+        query = db.query(Product)
+        
+        # Apply filtering
+        if category:
+            query = query.filter(Product.category == category)
+        
+        if search:
+            # Case-insensitive search in name and description
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    Product.name.ilike(search_term),
+                    Product.description.ilike(search_term)
+                )
+            )
+        
+        # Execute the query
+        products = query.all()
+        
+        # Convert to JSON
+        result = []
+        for product in products:
+            result.append({
+                "id": product.id,
+                "name": product.name,
+                "description": product.description,
+                "price": product.price,
+                "stock_quantity": product.stock_quantity,
+                "image_url": product.image_url,
+                "category": product.category
+            })
+        
+        return jsonify({"products": result}), 200
+        
+    except Exception as e:
+        logger.error(f"Error retrieving products: {str(e)}")
+        return jsonify({"error": "Failed to retrieve products"}), 500
+    finally:
+        db.close()
+
+@app.route("/api/products/<int:product_id>", methods=["GET"])
+def get_product(product_id):
+    """
+    Get details for a specific product
+    """
+    db = SessionLocal()
+    try:
+        product = db.query(Product).filter(Product.id == product_id).first()
+        
+        if not product:
+            return jsonify({"error": "Product not found"}), 404
+        
+        result = {
+            "id": product.id,
+            "name": product.name,
+            "description": product.description,
+            "price": product.price,
+            "stock_quantity": product.stock_quantity,
+            "image_url": product.image_url,
+            "category": product.category
+        }
+        
+        return jsonify(result), 200
+        
+    except Exception as e:
+        logger.error(f"Error retrieving product: {str(e)}")
+        return jsonify({"error": "Failed to retrieve product"}), 500
+    finally:
+        db.close()
+
+@app.route("/api/products/categories", methods=["GET"])
+def get_categories():
+    """
+    Get all unique product categories
+    """
+    db = SessionLocal()
+    try:
+        # Get distinct categories
+        categories = db.query(Product.category).distinct().all()
+        
+        # Extract category names
+        result = [category[0] for category in categories if category[0]]
+        
+        return jsonify({"categories": result}), 200
+        
+    except Exception as e:
+        logger.error(f"Error retrieving categories: {str(e)}")
+        return jsonify({"error": "Failed to retrieve categories"}), 500
+    finally:
+        db.close()
+
+# Cart related endpoints
+@app.route("/api/cart", methods=["GET"])
+@jwt_required()
+def get_cart():
+    """
+    Get the current user's cart
+    """
     # Get the user identity from the JWT
     user_id = get_jwt_identity()
     
@@ -633,83 +742,413 @@ def generate_orders_api():
     try:
         user_id = int(user_id)
     except ValueError:
-        return jsonify({"error": "Invalid user authentication"}), 401
+        # Use a demo user ID if not a valid integer
+        user_id = 1
     
     db = SessionLocal()
     try:
-        # Check if user is admin (simple check for demo purposes)
-        user = db.query(User).filter(User.id == user_id).first()
-        if not user or user.username != "admin":
-            return jsonify({"error": "Only admin users can generate orders"}), 403
+        # Get the user's cart
+        cart = db.query(Cart).filter(Cart.user_id == user_id).first()
         
-        # Parse request data
-        data = request.json
-        if not data:
-            return jsonify({"error": "Request body is required"}), 400
+        # If cart doesn't exist, create it
+        if not cart:
+            cart = Cart(user_id=user_id)
+            db.add(cart)
+            db.commit()
         
-        # Extract parameters with defaults
-        user_ids = data.get("user_ids")  # None means all users
-        num_orders = data.get("num_orders", 1)
-        status = data.get("status")  # None means random
-        min_items = data.get("min_items", 1)
-        max_items = data.get("max_items", 5)
-        days_ago = data.get("days_ago", 30)
+        # Get cart items with product details
+        cart_items = db.query(CartItem, Product).join(
+            Product, CartItem.product_id == Product.id
+        ).filter(CartItem.cart_id == cart.id).all()
         
-        # Validate inputs
-        if user_ids and not isinstance(user_ids, list):
-            return jsonify({"error": "user_ids must be a list of integers"}), 400
+        # Calculate total
+        total = sum(item[0].quantity * item[1].price for item in cart_items)
         
-        if not isinstance(num_orders, int) or num_orders < 1:
-            return jsonify({"error": "num_orders must be a positive integer"}), 400
-            
-        if not isinstance(min_items, int) or min_items < 1:
-            return jsonify({"error": "min_items must be a positive integer"}), 400
-            
-        if not isinstance(max_items, int) or max_items < min_items:
-            return jsonify({"error": "max_items must be greater than or equal to min_items"}), 400
-        
-        # We can close the DB session now because generate_orders will create its own sessions
-        db.close()
-        
-        # Calculate date range
-        from datetime import datetime, timedelta
-        end_date = datetime.utcnow()
-        start_date = end_date - timedelta(days=days_ago)
-        
-        # Import and call the generation function
-        from backend.generate_orders import generate_orders
-        orders = generate_orders(
-            user_ids=user_ids,
-            num_orders=num_orders,
-            status=status,
-            min_items=min_items,
-            max_items=max_items,
-            start_date=start_date,
-            end_date=end_date
-        )
-        
-        # Prepare response data
-        result = []
-        for order in orders:
-            result.append({
-                "id": order.id,
-                "order_number": order.order_number,
-                "user_id": order.user_id,
-                "total_amount": order.total_amount,
-                "status": order.status.value,
-                "ordered_at": order.ordered_at.isoformat()
+        # Format response
+        items = []
+        for cart_item, product in cart_items:
+            items.append({
+                "cart_item_id": cart_item.id,
+                "product_id": product.id,
+                "name": product.name,
+                "price": product.price,
+                "quantity": cart_item.quantity,
+                "subtotal": cart_item.quantity * product.price,
+                "image_url": product.image_url
             })
         
         return jsonify({
-            "message": f"Successfully generated {len(orders)} orders",
-            "orders": result
+            "cart_id": cart.id,
+            "items": items,
+            "total": total,
+            "item_count": len(items)
+        }), 200
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error retrieving cart: {str(e)}")
+        return jsonify({"error": "Failed to retrieve cart"}), 500
+    finally:
+        db.close()
+
+@app.route("/api/cart/items", methods=["POST"])
+@jwt_required()
+def add_to_cart():
+    """
+    Add an item to the cart
+    """
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # Use a demo user ID if not a valid integer
+        user_id = 1
+    
+    data = request.get_json()
+    
+    # Validate required fields
+    if not data.get("product_id") or not data.get("quantity"):
+        return jsonify({"error": "Product ID and quantity are required"}), 400
+    
+    product_id = data["product_id"]
+    quantity = int(data["quantity"])
+    
+    # Ensure quantity is positive
+    if quantity <= 0:
+        return jsonify({"error": "Quantity must be positive"}), 400
+    
+    db = SessionLocal()
+    try:
+        # Check if product exists and has enough stock
+        product = db.query(Product).filter(Product.id == product_id).first()
+        
+        if not product:
+            return jsonify({"error": "Product not found"}), 404
+        
+        if product.stock_quantity < quantity:
+            return jsonify({"error": "Not enough stock available"}), 400
+        
+        # Get or create the user's cart
+        cart = db.query(Cart).filter(Cart.user_id == user_id).first()
+        
+        if not cart:
+            cart = Cart(user_id=user_id)
+            db.add(cart)
+            db.flush()
+        
+        # Check if the product is already in the cart
+        cart_item = db.query(CartItem).filter(
+            CartItem.cart_id == cart.id,
+            CartItem.product_id == product_id
+        ).first()
+        
+        if cart_item:
+            # Update existing cart item
+            cart_item.quantity += quantity
+        else:
+            # Create new cart item
+            cart_item = CartItem(
+                cart_id=cart.id,
+                product_id=product_id,
+                quantity=quantity
+            )
+            db.add(cart_item)
+        
+        # Update cart timestamp
+        cart.updated_at = datetime.utcnow()
+        
+        db.commit()
+        
+        # Return updated cart
+        return get_cart()
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error adding to cart: {str(e)}")
+        return jsonify({"error": "Failed to add item to cart"}), 500
+    finally:
+        db.close()
+
+@app.route("/api/cart/items/<int:cart_item_id>", methods=["PUT"])
+@jwt_required()
+def update_cart_item(cart_item_id):
+    """
+    Update a cart item quantity
+    """
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # Use a demo user ID if not a valid integer
+        user_id = 1
+    
+    data = request.get_json()
+    
+    # Validate required fields
+    if "quantity" not in data:
+        return jsonify({"error": "Quantity is required"}), 400
+    
+    quantity = int(data["quantity"])
+    
+    db = SessionLocal()
+    try:
+        # Get the user's cart
+        cart = db.query(Cart).filter(Cart.user_id == user_id).first()
+        
+        if not cart:
+            return jsonify({"error": "Cart not found"}), 404
+        
+        # Get the cart item
+        cart_item = db.query(CartItem).filter(
+            CartItem.id == cart_item_id,
+            CartItem.cart_id == cart.id
+        ).first()
+        
+        if not cart_item:
+            return jsonify({"error": "Cart item not found"}), 404
+        
+        # Check product stock
+        product = db.query(Product).filter(Product.id == cart_item.product_id).first()
+        
+        if quantity > 0:
+            if product.stock_quantity < quantity:
+                return jsonify({"error": "Not enough stock available"}), 400
+            
+            # Update quantity
+            cart_item.quantity = quantity
+            
+            # Update cart timestamp
+            cart.updated_at = datetime.utcnow()
+            
+            db.commit()
+        else:
+            # If quantity is 0 or negative, remove the item
+            db.delete(cart_item)
+            
+            # Update cart timestamp
+            cart.updated_at = datetime.utcnow()
+            
+            db.commit()
+        
+        # Return updated cart
+        return get_cart()
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error updating cart item: {str(e)}")
+        return jsonify({"error": "Failed to update cart item"}), 500
+    finally:
+        db.close()
+
+@app.route("/api/cart/items/<int:cart_item_id>", methods=["DELETE"])
+@jwt_required()
+def remove_from_cart(cart_item_id):
+    """
+    Remove an item from the cart
+    """
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # Use a demo user ID if not a valid integer
+        user_id = 1
+    
+    db = SessionLocal()
+    try:
+        # Get the user's cart
+        cart = db.query(Cart).filter(Cart.user_id == user_id).first()
+        
+        if not cart:
+            return jsonify({"error": "Cart not found"}), 404
+        
+        # Get the cart item
+        cart_item = db.query(CartItem).filter(
+            CartItem.id == cart_item_id,
+            CartItem.cart_id == cart.id
+        ).first()
+        
+        if not cart_item:
+            return jsonify({"error": "Cart item not found"}), 404
+        
+        # Remove the item
+        db.delete(cart_item)
+        
+        # Update cart timestamp
+        cart.updated_at = datetime.utcnow()
+        
+        db.commit()
+        
+        # Return updated cart
+        return get_cart()
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error removing cart item: {str(e)}")
+        return jsonify({"error": "Failed to remove cart item"}), 500
+    finally:
+        db.close()
+
+@app.route("/api/cart/clear", methods=["POST"])
+@jwt_required()
+def clear_cart():
+    """
+    Clear all items from the cart
+    """
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # Use a demo user ID if not a valid integer
+        user_id = 1
+    
+    db = SessionLocal()
+    try:
+        # Get the user's cart
+        cart = db.query(Cart).filter(Cart.user_id == user_id).first()
+        
+        if not cart:
+            return jsonify({"error": "Cart not found"}), 404
+        
+        # Remove all items
+        db.query(CartItem).filter(CartItem.cart_id == cart.id).delete()
+        
+        # Update cart timestamp
+        cart.updated_at = datetime.utcnow()
+        
+        db.commit()
+        
+        return jsonify({
+            "message": "Cart cleared successfully",
+            "cart_id": cart.id,
+            "items": [],
+            "total": 0,
+            "item_count": 0
+        }), 200
+        
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error clearing cart: {str(e)}")
+        return jsonify({"error": "Failed to clear cart"}), 500
+    finally:
+        db.close()
+
+@app.route("/api/cart/checkout", methods=["POST"])
+@jwt_required()
+def checkout():
+    """
+    Checkout the cart and create an order
+    """
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        # Use a demo user ID if not a valid integer
+        user_id = 1
+    
+    data = request.get_json()
+    
+    # Validate required fields
+    if not data.get("shipping_address"):
+        return jsonify({"error": "Shipping address is required"}), 400
+    
+    shipping_address = data["shipping_address"]
+    
+    db = SessionLocal()
+    try:
+        # Get the user's cart
+        cart = db.query(Cart).filter(Cart.user_id == user_id).first()
+        
+        if not cart:
+            return jsonify({"error": "Cart not found"}), 404
+        
+        # Get cart items with product details
+        cart_items = db.query(CartItem, Product).join(
+            Product, CartItem.product_id == Product.id
+        ).filter(CartItem.cart_id == cart.id).all()
+        
+        if not cart_items:
+            return jsonify({"error": "Cart is empty"}), 400
+        
+        # Check stock for all items
+        for cart_item, product in cart_items:
+            if product.stock_quantity < cart_item.quantity:
+                return jsonify({
+                    "error": f"Not enough stock for {product.name}. Available: {product.stock_quantity}."
+                }), 400
+        
+        # Generate order number
+        import random
+        import string
+        order_number = 'ORD-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        
+        # Calculate total
+        total = sum(item[0].quantity * item[1].price for item in cart_items)
+        
+        # Create order
+        now = datetime.utcnow()
+        order = Order(
+            order_number=order_number,
+            user_id=user_id,
+            total_amount=total,
+            status="pending",
+            ordered_at=now,
+            estimated_delivery=now + timedelta(days=5),
+            shipping_address=shipping_address
+        )
+        db.add(order)
+        db.flush()  # To get the order ID
+        
+        # Create order items and update stock
+        for cart_item, product in cart_items:
+            # Create order item
+            order_item = OrderItem(
+                order_id=order.id,
+                product_name=product.name,
+                quantity=cart_item.quantity,
+                price=product.price
+            )
+            db.add(order_item)
+            
+            # Update product stock
+            product.stock_quantity -= cart_item.quantity
+        
+        # Clear cart
+        db.query(CartItem).filter(CartItem.cart_id == cart.id).delete()
+        
+        # Update cart timestamp
+        cart.updated_at = now
+        
+        db.commit()
+        
+        return jsonify({
+            "message": "Order placed successfully",
+            "order_number": order_number,
+            "total": total,
+            "status": "pending",
+            "estimated_delivery": (now + timedelta(days=5)).isoformat()
         }), 201
         
     except Exception as e:
-        if 'db' in locals() and db:
-            db.close()
-        logger.error(f"Error generating orders: {str(e)}")
-        return jsonify({"error": f"Failed to generate orders: {str(e)}"}), 500
+        db.rollback()
+        logger.error(f"Error during checkout: {str(e)}")
+        return jsonify({"error": "Failed to complete checkout"}), 500
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     port = int(os.getenv("BACKEND_PORT", 5000))

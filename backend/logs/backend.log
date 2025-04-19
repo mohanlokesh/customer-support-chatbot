@@ -1,0 +1,2 @@
+2025-04-19 18:27:31.174 | ERROR    | __main__:add_to_cart:871 - Error adding to cart: name 'datetime' is not defined
+2025-04-19 18:28:10.464 | ERROR    | __main__:add_to_cart:871 - Error adding to cart: name 'datetime' is not defined

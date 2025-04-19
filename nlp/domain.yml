@@ -21,11 +21,22 @@ intents:
   - request_cancel_order
   - confirm_cancel_order
   - provide_email
+  - ask_product_list
+  - ask_product_price
+  - ask_product_details
+  - ask_cart_contents
+  - ask_add_to_cart
+  - ask_remove_from_cart
+  - ask_clear_cart
+  - ask_checkout_process
 
 entities:
   - order_number
   - email
   - product_name
+  - product_id
+  - quantity
+  - category
 
 slots:
   order_number:
@@ -46,6 +57,24 @@ slots:
     mappings:
     - type: from_entity
       entity: product_name
+  product_id:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: product_id
+  quantity:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: quantity
+  category:
+    type: text
+    influence_conversation: true
+    mappings:
+    - type: from_entity
+      entity: category
   confirm_cancel:
     type: text
     influence_conversation: true
@@ -113,6 +142,25 @@ responses:
   utter_ask_email_for_reset:
     - text: "To reset your password, I'll need your email address. What email should I use for the password reset?"
 
+  utter_product_list:
+    - text: "You can browse our products in the Products tab. You can filter by category or search for specific items."
+    - text: "We have a variety of products available in our store. Would you like me to help you find something specific?"
+
+  utter_product_details_without_name:
+    - text: "I'd be happy to provide details about a product. Which product are you interested in?"
+
+  utter_cart_contents:
+    - text: "You can view your cart contents in the Cart tab. There you can update quantities, remove items, or proceed to checkout."
+
+  utter_checkout_process:
+    - text: "To checkout, go to the Cart tab, review your items, enter your shipping address, and click 'Place Order'. Payment will be collected securely."
+
+  utter_add_to_cart_without_product:
+    - text: "I'd be happy to help you add an item to your cart. Which product would you like to add?"
+
+  utter_remove_from_cart_without_product:
+    - text: "I'd be happy to help you remove an item from your cart. Which product would you like to remove?"
+
 actions:
   - action_check_order_status
   - action_list_order_items
@@ -120,6 +168,10 @@ actions:
   - action_cancel_order
   - action_handle_cancel_confirmation
   - action_reset_password
+  - action_get_product_details
+  - action_add_to_cart
+  - action_remove_from_cart
+  - action_clear_cart
   - utter_greet
   - utter_goodbye
   - utter_thank
@@ -137,6 +189,12 @@ actions:
   - utter_out_of_scope
   - utter_ask_order_items_without_number
   - utter_ask_email_for_reset
+  - utter_product_list
+  - utter_product_details_without_name
+  - utter_cart_contents
+  - utter_checkout_process
+  - utter_add_to_cart_without_product
+  - utter_remove_from_cart_without_product
 
 session_config:
   session_expiration_time: 60
