@@ -160,6 +160,63 @@ The application will be accessible at: http://localhost:8501
 
 7. **SupportData**: id, company_id, question, answer, category, created/updated timestamps
 
+## Order Generation
+
+### Generating Test Orders
+
+You can generate test orders for users in the database using the provided script. This is useful for populating test data or creating orders in bulk.
+
+#### Command Line Usage
+
+To generate orders from the command line:
+
+```bash
+# Generate 5 orders for all active users
+python backend/generate_orders.py --num-orders 5
+
+# Generate 3 orders with 'shipped' status for specific users
+python backend/generate_orders.py --user-ids 1 2 --num-orders 3 --status shipped
+
+# Generate orders with more items
+python backend/generate_orders.py --min-items 2 --max-items 8
+
+# Generate orders from the past 90 days
+python backend/generate_orders.py --days-ago 90
+```
+
+Available options:
+- `--user-ids`: IDs of users to generate orders for (default: all active users)
+- `--num-orders`: Number of orders to generate per user (default: 1)
+- `--status`: Order status (default: random)
+- `--min-items`: Minimum number of items per order (default: 1)
+- `--max-items`: Maximum number of items per order (default: 5)
+- `--days-ago`: Generate orders from this many days ago until now (default: 30)
+
+#### API Usage
+
+You can also generate orders using the API. This endpoint is restricted to admin users.
+
+```json
+POST /api/orders/generate
+{
+  "user_ids": [1, 2],       // optional, specific user IDs
+  "num_orders": 3,          // optional, default: 1
+  "status": "processing",   // optional, default: random
+  "min_items": 2,           // optional, default: 1
+  "max_items": 5,           // optional, default: 5 
+  "days_ago": 14            // optional, default: 30
+}
+```
+
+Example curl command:
+```bash
+curl -X POST \
+  -H "Authorization: Bearer <your_token>" \
+  -H "Content-Type: application/json" \
+  -d '{"user_ids": [1, 2], "num_orders": 3}' \
+  http://localhost:5000/api/orders/generate
+```
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 

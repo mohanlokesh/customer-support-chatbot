@@ -615,6 +615,102 @@ def reset_password():
     finally:
         db.close()
 
+# Add a new endpoint for generating orders for users
+@app.route("/api/orders/generate", methods=["POST"])
+@jwt_required()
+def generate_orders_api():
+    """
+    Generate new orders for specified users or all users
+    """
+    # Admin-only endpoint (for demonstration purposes, we're using a simple role check)
+    # In a production environment, use proper role-based access control
+    from database.models import User
+    
+    # Get the user identity from the JWT
+    user_id = get_jwt_identity()
+    
+    # Convert to integer if possible
+    try:
+        user_id = int(user_id)
+    except ValueError:
+        return jsonify({"error": "Invalid user authentication"}), 401
+    
+    db = SessionLocal()
+    try:
+        # Check if user is admin (simple check for demo purposes)
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user or user.username != "admin":
+            return jsonify({"error": "Only admin users can generate orders"}), 403
+        
+        # Parse request data
+        data = request.json
+        if not data:
+            return jsonify({"error": "Request body is required"}), 400
+        
+        # Extract parameters with defaults
+        user_ids = data.get("user_ids")  # None means all users
+        num_orders = data.get("num_orders", 1)
+        status = data.get("status")  # None means random
+        min_items = data.get("min_items", 1)
+        max_items = data.get("max_items", 5)
+        days_ago = data.get("days_ago", 30)
+        
+        # Validate inputs
+        if user_ids and not isinstance(user_ids, list):
+            return jsonify({"error": "user_ids must be a list of integers"}), 400
+        
+        if not isinstance(num_orders, int) or num_orders < 1:
+            return jsonify({"error": "num_orders must be a positive integer"}), 400
+            
+        if not isinstance(min_items, int) or min_items < 1:
+            return jsonify({"error": "min_items must be a positive integer"}), 400
+            
+        if not isinstance(max_items, int) or max_items < min_items:
+            return jsonify({"error": "max_items must be greater than or equal to min_items"}), 400
+        
+        # We can close the DB session now because generate_orders will create its own sessions
+        db.close()
+        
+        # Calculate date range
+        from datetime import datetime, timedelta
+        end_date = datetime.utcnow()
+        start_date = end_date - timedelta(days=days_ago)
+        
+        # Import and call the generation function
+        from backend.generate_orders import generate_orders
+        orders = generate_orders(
+            user_ids=user_ids,
+            num_orders=num_orders,
+            status=status,
+            min_items=min_items,
+            max_items=max_items,
+            start_date=start_date,
+            end_date=end_date
+        )
+        
+        # Prepare response data
+        result = []
+        for order in orders:
+            result.append({
+                "id": order.id,
+                "order_number": order.order_number,
+                "user_id": order.user_id,
+                "total_amount": order.total_amount,
+                "status": order.status.value,
+                "ordered_at": order.ordered_at.isoformat()
+            })
+        
+        return jsonify({
+            "message": f"Successfully generated {len(orders)} orders",
+            "orders": result
+        }), 201
+        
+    except Exception as e:
+        if 'db' in locals() and db:
+            db.close()
+        logger.error(f"Error generating orders: {str(e)}")
+        return jsonify({"error": f"Failed to generate orders: {str(e)}"}), 500
+
 if __name__ == "__main__":
     port = int(os.getenv("BACKEND_PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True) 
