@@ -27,6 +27,7 @@ requests>=2.32.3
 loguru>=0.7.3
 pydantic<1.10.10
 pytest>=8.3.5
+psutil
 
 # Security
 cryptography>=44.0.2

@@ -8,6 +8,7 @@ import bcrypt
 from loguru import logger
 import sys
 from sqlalchemy import or_
+import requests
 
 # Import database components
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -74,6 +75,22 @@ def health_check():
     Health check endpoint
     """
     return jsonify({"status": "ok", "message": "Backend service is running"}), 200
+
+@app.route("/api/health/rasa", methods=["GET"])
+def rasa_health_check():
+    """
+    Check if Rasa server is healthy
+    """
+    rasa_url = os.getenv("RASA_URL", "http://localhost:5005")
+    try:
+        response = requests.get(f"{rasa_url}/health", timeout=2)
+        if response.status_code == 200:
+            return jsonify({"status": "ok", "message": "Rasa server is available"}), 200
+        else:
+            return jsonify({"status": "error", "message": f"Rasa returned status code {response.status_code}"}), 200
+    except requests.exceptions.RequestException as e:
+        logger.warning(f"Rasa health check failed: {str(e)}")
+        return jsonify({"status": "error", "message": "Rasa server is not available"}), 200
 
 @app.route("/api/auth/register", methods=["POST"])
 def register():

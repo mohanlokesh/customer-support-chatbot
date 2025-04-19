@@ -2,12 +2,13 @@ import json
 import logging
 import os
 import requests
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List, Text, Optional
 from datetime import datetime, timedelta
 import jwt
 import string
 import random
 from dotenv import load_dotenv
+import re
 
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
@@ -52,6 +53,39 @@ def get_auth_token(user_id):
         logger.error(f"Error generating JWT token: {str(e)}")
         return None
 
+def extract_order_number(tracker: Tracker) -> Optional[str]:
+    """
+    Extracts order number from the tracker using multiple methods:
+    1. From the slot
+    2. From entities in the latest message
+    3. From regex pattern matching in the message text
+    
+    Returns the order number if found, None otherwise.
+    """
+    # First check if order number is in slot
+    order_number = tracker.get_slot("order_number")
+    
+    # If no order number in slot, check if it's in the latest message via entity extraction
+    if not order_number:
+        for entity in tracker.latest_message.get('entities', []):
+            if entity['entity'] == 'order_number':
+                order_number = entity['value']
+                break
+    
+    # Check if text like "ORD-12345" appears in the message using regex
+    if not order_number:
+        message_text = tracker.latest_message.get('text', '').upper()
+        # Match different order number formats: ORD-123, ORDER123, #ORD-123, etc.
+        order_matches = re.findall(r'(?:ORD|ORDER)[-\s]?\d+|\#(?:ORD|ORDER)?[-\s]?\d+', message_text)
+        if order_matches:
+            # Clean up the order number format
+            order_number = order_matches[0].replace(' ', '').replace('#', '')
+            # Ensure it starts with ORD if it's just digits after a hash
+            if not (order_number.startswith('ORD') or order_number.startswith('ORDER')):
+                order_number = 'ORD-' + order_number
+    
+    return order_number
+
 class ActionCheckOrderStatus(Action):
     """
     Action to check the status of a specific order.
@@ -64,15 +98,15 @@ class ActionCheckOrderStatus(Action):
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
-        # Get the order number from the slot
-        order_number = tracker.get_slot("order_number")
+        # Get the order number using the utility function
+        order_number = extract_order_number(tracker)
         
         if not order_number:
-            dispatcher.utter_message(text="I'll need your order number to check the status. Could you please provide it?")
+            dispatcher.utter_message(text="I'll need your order number to check its status. Could you please provide it?")
             return []
         
         try:
-            # Get user ID from sender ID (requires user authentication in the backend)
+            # Get user ID from sender ID
             user_id = tracker.sender_id
             
             # Generate a valid JWT token for the backend
@@ -89,7 +123,7 @@ class ActionCheckOrderStatus(Action):
             
             # Call backend API to get order status
             response = requests.get(
-                f"{BACKEND_URL}/api/orders/{order_number}/status",
+                f"{BACKEND_URL}/api/orders/{order_number}",
                 headers=headers
             )
             
@@ -173,8 +207,8 @@ class ActionListOrderItems(Action):
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
-        # Get the order number from the slot
-        order_number = tracker.get_slot("order_number")
+        # Get the order number using the utility function
+        order_number = extract_order_number(tracker)
         
         if not order_number:
             dispatcher.utter_message(text="I'll need your order number to list the items. Could you please provide it?")
@@ -352,23 +386,8 @@ class ActionCancelOrder(Action):
             tracker: Tracker,
             domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
         
-        # Get the order number from the slot or extract it from latest message
-        order_number = tracker.get_slot("order_number")
-        
-        # If no order number in slot, check if it's in the latest message via entity extraction
-        if not order_number:
-            for entity in tracker.latest_message.get('entities', []):
-                if entity['entity'] == 'order_number':
-                    order_number = entity['value']
-                    break
-        
-        # Check if text like "ORD-12345" appears in the message
-        if not order_number:
-            message_text = tracker.latest_message.get('text', '').upper()
-            import re
-            order_matches = re.findall(r'ORD[-\s]?\d+', message_text)
-            if order_matches:
-                order_number = order_matches[0].replace(' ', '')
+        # Get the order number using the utility function
+        order_number = extract_order_number(tracker)
         
         if not order_number:
             dispatcher.utter_message(text="I'll need your order number to cancel it. Could you please provide it?")
