@@ -38,8 +38,8 @@ ai-chatbot/
 
 ### Prerequisites
 
-- Python 3.10+
-- PostgreSQL
+- Python 3.10.11
+- PostgreSQL 15
 - pip (Python package manager)
 
 ### Installation
