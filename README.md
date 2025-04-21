@@ -79,7 +79,12 @@ ai-chatbot/
    # restore from backup
    psql -U postgres -d ai_chatbot_new -f database_backup.sql
    
-   # Initialize the database
+   # Default username and passwords
+   # username: padma pass: password
+   # username: admin pass: password
+   # username: testuser pass: password
+
+   # Initialize the database (if not restored from the backup and need fresh db)
    python -m database.init_db
    ```
 
