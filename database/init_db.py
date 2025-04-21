@@ -312,8 +312,14 @@ if user_count == 0:
         for _ in range(random.randint(0, 3)):
             order_date = datetime.utcnow() - timedelta(days=random.randint(1, 30))
             
-            # Generate a random order number
-            order_number = 'ORD-' + ''.join(random.choices('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', k=8))
+            # Generate a unique order number
+            while True:
+                candidate = f'ORD-{random.randint(10000, 99999)}'
+                # Check if this order number already exists
+                existing_order = session.query(Order).filter(Order.order_number == candidate).first()
+                if not existing_order:
+                    order_number = candidate
+                    break
             
             # Pick a random status with bias towards "delivered"
             statuses = ["pending", "processing", "shipped", "delivered", "cancelled", "backordered"]
@@ -329,7 +335,7 @@ if user_count == 0:
                 ordered_at=order_date,
                 estimated_delivery=order_date + timedelta(days=random.randint(3, 10)),
                 delivered_at=order_date + timedelta(days=random.randint(3, 7)) if status == "delivered" else None,
-                shipping_address="123 Main St, Anytown, AN 12345",
+                shipping_address="123 Anna Salai, Chennai, Chennai, Tamil Nadu, India - 600002",
                 tracking_number=''.join(random.choices('0123456789', k=12)) if status in ["shipped", "delivered"] else None
             )
             session.add(order)

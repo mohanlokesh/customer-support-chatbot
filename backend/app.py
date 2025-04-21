@@ -9,6 +9,7 @@ from loguru import logger
 import sys
 from sqlalchemy import or_
 import requests
+import random
 
 # Import database components
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -595,8 +596,6 @@ def reset_password():
     
     if not temp_password:
         # Generate a temporary password if not provided
-        import string
-        import random
         chars = string.ascii_letters + string.digits
         temp_password = ''.join(random.choice(chars) for _ in range(12))
     
@@ -1109,9 +1108,16 @@ def checkout():
                 }), 400
         
         # Generate order number
-        import random
-        import string
-        order_number = 'ORD-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+        order_number = None
+        while True:
+            # Generate a candidate order number
+            candidate = f'ORD-{random.randint(10000, 99999)}'
+            
+            # Check if this order number already exists
+            existing_order = db.query(Order).filter(Order.order_number == candidate).first()
+            if not existing_order:
+                order_number = candidate
+                break
         
         # Calculate total
         total = sum(item[0].quantity * item[1].price for item in cart_items)

@@ -41,29 +41,36 @@ SAMPLE_PRODUCTS = [
     {"name": "Laptop Sleeve", "price": 34.99},
 ]
 
-def generate_order_number() -> str:
+def generate_order_number(db_session) -> str:
     """Generate a unique order number"""
-    return f"ORD-{uuid.uuid4().hex[:8].upper()}"
+    while True:
+        # Generate a candidate order number
+        candidate = f"ORD-{random.randint(10000, 99999)}"
+        
+        # Check if this order number already exists
+        existing_order = db_session.query(Order).filter(Order.order_number == candidate).first()
+        if not existing_order:
+            return candidate
 
 def generate_tracking_number() -> str:
     """Generate a random tracking number"""
     return f"TRK{random.randint(1000000, 9999999)}"
 
 def generate_address() -> str:
-    """Generate a random shipping address"""
+    """Generate a random shipping address in Tamil Nadu, India"""
     street_numbers = list(range(1, 999))
-    street_names = ["Main St", "Oak Ave", "Maple Dr", "Park Blvd", "Washington St"]
-    cities = ["New York", "Los Angeles", "Chicago", "Houston", "Phoenix"]
-    states = ["NY", "CA", "IL", "TX", "AZ"]
-    zip_codes = [f"{random.randint(10000, 99999)}" for _ in range(5)]
+    street_names = ["Gandhi Road", "Nehru Street", "Kamaraj Avenue", "Bharathiar Street", "Anna Salai"]
+    cities = ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Vellore", "Thanjavur"]
+    districts = ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tirunelveli", "Vellore", "Thanjavur"]
+    pin_codes = ["600001", "600002", "600003", "600018", "600020", "600025", "600040", "600078", "600095", "600119", "641001", "625001", "620001"]
     
     street_number = random.choice(street_numbers)
     street_name = random.choice(street_names)
     city = random.choice(cities)
-    state = random.choice(states)
-    zip_code = random.choice(zip_codes)
+    district = random.choice(districts)
+    pin_code = random.choice(pin_codes)
     
-    return f"{street_number} {street_name}, {city}, {state} {zip_code}"
+    return f"{street_number} {street_name}, {city}, {district}, Tamil Nadu, India - {pin_code}"
 
 def create_order_items(db_session, order_id: int, min_items: int = 1, max_items: int = 5) -> List[OrderItem]:
     """Create a random number of order items for an order"""
@@ -177,7 +184,7 @@ def generate_orders(
                 
                 # Create the order
                 order = Order(
-                    order_number=generate_order_number(),
+                    order_number=generate_order_number(db),
                     user_id=user_id,
                     status=order_status,
                     ordered_at=ordered_at,
