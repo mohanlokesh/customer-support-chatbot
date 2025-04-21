@@ -568,37 +568,6 @@ COPY public.companies (id, name, description, contact_email, contact_phone, webs
 --
 
 COPY public.conversations (id, user_id, start_time, end_time, duration) FROM stdin;
-1	4	2025-04-19 06:33:07.798297	\N	\N
-2	4	2025-04-19 06:34:04.943663	\N	\N
-3	4	2025-04-19 06:47:08.784653	\N	\N
-4	4	2025-04-19 06:54:56.637104	\N	\N
-5	4	2025-04-19 06:56:37.430975	\N	\N
-6	4	2025-04-19 07:01:37.803703	\N	\N
-7	4	2025-04-19 07:12:55.160065	\N	\N
-8	4	2025-04-19 07:25:45.368521	\N	\N
-9	4	2025-04-19 07:33:11.81172	\N	\N
-10	4	2025-04-19 07:35:40.776436	\N	\N
-11	4	2025-04-19 07:38:38.136404	\N	\N
-12	4	2025-04-19 08:08:07.185617	\N	\N
-13	4	2025-04-19 08:10:19.751469	\N	\N
-14	4	2025-04-19 08:15:39.967532	\N	\N
-15	4	2025-04-19 08:22:16.300583	\N	\N
-16	4	2025-04-19 08:42:34.498202	\N	\N
-17	4	2025-04-19 08:59:47.722769	\N	\N
-18	4	2025-04-19 12:14:55.203493	\N	\N
-19	4	2025-04-19 13:16:46.09238	\N	\N
-20	4	2025-04-19 13:41:54.099284	\N	\N
-21	5	2025-04-19 15:34:31.049472	\N	\N
-22	4	2025-04-19 15:58:39.622063	\N	\N
-23	4	2025-04-19 16:08:38.923898	\N	\N
-24	4	2025-04-19 16:18:41.66507	\N	\N
-25	4	2025-04-19 16:20:49.556401	\N	\N
-26	4	2025-04-19 16:26:08.254079	\N	\N
-27	4	2025-04-19 16:47:18.494366	\N	\N
-28	4	2025-04-19 17:01:26.775973	\N	\N
-29	4	2025-04-19 17:09:23.914874	\N	\N
-30	4	2025-04-19 17:19:18.849742	\N	\N
-31	4	2025-04-19 17:31:08.509482	\N	\N
 \.
 
 
@@ -1089,140 +1058,6 @@ COPY public.events (id, sender_id, type_name, "timestamp", intent_name, action_n
 --
 
 COPY public.messages (id, conversation_id, is_user, content, "timestamp") FROM stdin;
-1	1	t	hi	2025-04-19 06:33:11.114677
-2	1	f	Hi there! Welcome to our customer service. What can I assist you with?	2025-04-19 06:33:15.416225
-3	1	t	I need to know my orders	2025-04-19 06:33:29.210146
-4	1	f	I'd be happy to check your order status. Could you please provide your order number?	2025-04-19 06:33:31.341294
-5	1	t	I don't know	2025-04-19 06:33:39.37856
-6	1	f	To reset your password, click on 'Forgot Password' on the login page. We'll send you an email with instructions to create a new password.	2025-04-19 06:33:41.511128
-7	1	t	I don't know my order number	2025-04-19 06:33:54.574119
-8	1	f	I'd be happy to check your order status. Could you please provide your order number?	2025-04-19 06:33:56.68857
-9	2	t	Hi, I need to know my order status	2025-04-19 06:37:56.626848
-10	2	f	I'd be happy to check your order status. Could you please provide your order number?	2025-04-19 06:37:58.771142
-11	2	t	ORD-67690  this is my order number	2025-04-19 06:38:08.276651
-12	2	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 06:38:14.547175
-13	3	t	hi	2025-04-19 06:47:10.831396
-14	3	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 06:47:14.901525
-15	4	t	hi	2025-04-19 06:54:58.681603
-16	4	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 06:55:02.782065
-17	4	t	hello	2025-04-19 06:55:10.899398
-18	4	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 06:55:14.943617
-19	5	t	hi	2025-04-19 06:56:39.464276
-20	5	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 06:56:43.567672
-21	6	t	hi	2025-04-19 07:01:39.872436
-22	6	f	Hi there! Welcome to our customer service. What can I assist you with?	2025-04-19 07:01:43.903423
-23	6	t	I want to know my order status	2025-04-19 07:02:37.334638
-24	6	f	I'd be happy to check your order status. Could you please provide your order number?	2025-04-19 07:02:39.466999
-25	6	t	my order number is ORD-51666	2025-04-19 07:02:59.321421
-26	6	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:03:05.627979
-27	6	t	hi	2025-04-19 07:06:57.975629
-28	6	f	Hi there! Welcome to our customer service. What can I assist you with?	2025-04-19 07:07:00.106404
-29	6	t	hello	2025-04-19 07:07:07.3323
-30	6	f	Good day! I'm here to help with any questions about your orders or our products.	2025-04-19 07:07:09.488237
-31	6	t	how are you	2025-04-19 07:07:14.746205
-32	6	f	That's beyond my current capabilities. I can help with questions about orders, shipping, returns, and account management. Could you ask something in those areas?	2025-04-19 07:07:16.903344
-33	6	t	my order number is ORD-51666	2025-04-19 07:07:22.631025
-34	6	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:07:28.941905
-35	6	t	my order number is ORD-51666	2025-04-19 07:10:22.252058
-36	6	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:10:28.540901
-37	7	t	my order number is ORD-51666 need to know the status	2025-04-19 07:12:57.205581
-38	7	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 07:13:01.261363
-39	7	t	my order number is ORD-51666	2025-04-19 07:13:27.509419
-40	7	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 07:13:31.576383
-41	7	t	my order number is ORD-51666 need to know the status	2025-04-19 07:15:50.481278
-42	7	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:15:58.836885
-43	7	t	my order number is ORD-51666 need to know the status	2025-04-19 07:17:56.534944
-44	7	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:18:02.802814
-45	7	t	my order number is ORD-51666 need to know the status	2025-04-19 07:19:03.628101
-46	7	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:19:09.881535
-47	7	t	my order number is ORD-51666 need to know the status	2025-04-19 07:19:49.312928
-48	7	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:19:55.617403
-49	8	t	my order number is ORD-51666 need to know the status	2025-04-19 07:25:47.417603
-50	8	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:25:55.687441
-51	8	t	my order number is ORD-51666 need to know the status	2025-04-19 07:28:56.491475
-52	8	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:29:02.782368
-53	8	t	my order number is ORD-51666 need to know the status	2025-04-19 07:31:09.705832
-54	8	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:31:16.013682
-55	9	t	my order number is ORD-51666 need to know the status	2025-04-19 07:33:13.864605
-56	9	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:33:20.171853
-57	10	t	my order number is ORD-51666 need to know the status	2025-04-19 07:35:42.839979
-58	10	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:35:49.132845
-59	11	t	my order number is ORD-51666 need to know the status	2025-04-19 07:38:40.203545
-60	11	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 07:38:46.495778
-61	12	t	my order number is ORD-51666 need to know the status	2025-04-19 08:08:09.22057
-62	12	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 08:08:17.432165
-63	13	t	my order number is ORD-51666 need to know the status	2025-04-19 08:10:21.832933
-64	13	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 08:10:28.121702
-65	14	t	my order number is ORD-51666 need to know the status	2025-04-19 08:15:42.030507
-66	14	f	I'm having trouble connecting to our order system. Please try again later or contact customer support.	2025-04-19 08:15:50.176185
-67	15	t	my order number is ORD-51666 need to know the status	2025-04-19 08:22:18.358161
-68	15	f	Your order ORD-51666 has been cancelled. If you didn't cancel it, please contact our support team.	2025-04-19 08:22:26.543468
-69	15	t	my order number is ORD-67690 need to know the status	2025-04-19 08:23:01.551008
-70	15	f	Your order ORD-67690 is pending. We're processing it now. Estimated delivery: March 08, 2025.	2025-04-19 08:23:07.892575
-71	15	t	are you able to list down the items in the order	2025-04-19 08:23:29.009743
-72	15	f	Standard shipping typically takes 3-5 business days. Express shipping is available for 1-2 business day delivery.	2025-04-19 08:23:31.188824
-73	15	t	my order number is ORD-67690 need to know the status	2025-04-19 08:25:41.989421
-74	15	f	I couldn't find an order with number ORD-67690. Please check the number and try again.	2025-04-19 08:25:48.381371
-75	15	t	need to cancel the order ORD-67690	2025-04-19 08:27:41.394504
-76	15	f	I couldn't find an order with number ORD-67690. Please check the number and try again.	2025-04-19 08:27:47.777846
-77	15	t	need to cancel the order ORD-67690	2025-04-19 08:28:16.570348
-78	15	f	Here are the items in your order ORD-67690:	2025-04-19 08:28:22.90013
-79	16	t	HI	2025-04-19 08:42:36.557847
-80	16	f	Hi there! Welcome to our customer service. What can I assist you with?	2025-04-19 08:42:44.931262
-81	16	t	may I know my order status for the order id ORD-67690	2025-04-19 08:43:19.130546
-82	16	f	Your order ORD-67690 is pending. We're processing it now. Estimated delivery: March 08, 2025.	2025-04-19 08:43:25.457741
-83	16	t	can you cancel the order 	2025-04-19 08:43:43.274551
-84	16	f	No problem at all! Feel free to ask if you have other questions.	2025-04-19 08:43:45.46693
-85	16	t	cancel the order ORD-67690	2025-04-19 08:44:08.188186
-86	16	f	Are you sure you want to cancel order #ORD-67690? This action cannot be undone.	2025-04-19 08:44:12.50392
-87	16	t	yes	2025-04-19 08:44:24.150498
-88	16	f	Thanks for chatting! I'll be here if you need more help later.	2025-04-19 08:44:26.351053
-89	16	t	cancel the order ORD-67690	2025-04-19 08:58:17.826502
-90	16	f	Are you sure you want to cancel order #ORD-67690? This action cannot be undone.	2025-04-19 08:58:23.958661
-91	16	t	yes	2025-04-19 08:58:40.736601
-92	16	f	I've successfully cancelled your order #ORD-67690.	2025-04-19 08:58:49.176969
-93	18	t	hi	2025-04-19 12:14:57.253096
-94	18	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 12:15:01.337398
-95	18	t	I want to know status for the order number ORD-523CAAAA	2025-04-19 12:15:25.539726
-96	18	f	Your order ORD-523CAAAA has been delivered. If you haven't received it, please contact our support team.	2025-04-19 12:15:33.992968
-97	19	t	Hi, how to place order	2025-04-19 13:16:48.180702
-98	19	f	Thanks for chatting! I'll be here if you need more help later.	2025-04-19 13:16:52.584313
-99	19	t	how to place order	2025-04-19 13:17:17.093241
-100	19	f	Have a great day! Come back anytime you need assistance.	2025-04-19 13:17:19.235172
-101	19	t	list items 	2025-04-19 13:17:40.350153
-102	19	f	I'd be happy to check the items in your order. Could you please provide your order number?	2025-04-19 13:17:42.505285
-103	19	t	Order #ORD-61833 	2025-04-19 13:18:10.655732
-104	19	f	Your order ORD-61833 is being processed. Estimated delivery: March 19, 2025.	2025-04-19 13:18:16.962288
-105	20	t	What's my order status?	2025-04-19 13:41:56.179716
-106	20	f	I'd be happy to check your order status. Could you please provide your order number?	2025-04-19 13:41:58.391229
-107	21	t	How can I track my order?	2025-04-19 15:34:33.116364
-108	21	f	I can help you track your order. Please provide your order number so I can look it up.	2025-04-19 15:34:35.251675
-109	21	t	How to place an order	2025-04-19 15:35:06.505914
-110	21	f	You can cancel an order within 24 hours of placing it if it hasn't shipped yet. Would you like me to help you cancel an order?	2025-04-19 15:35:08.622993
-111	23	t	I want to track my Order #ORD-61833	2025-04-19 16:08:41.005161
-112	23	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 16:08:45.085033
-113	24	t	hi	2025-04-19 16:18:43.739953
-114	24	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 16:18:47.834658
-115	25	t	hi	2025-04-19 16:20:51.642986
-116	25	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 16:20:55.716664
-117	26	t	hi	2025-04-19 16:26:10.306315
-118	26	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 16:26:14.36799
-119	27	t	hi	2025-04-19 16:47:20.550518
-120	27	f	Hello! I'm your AI customer support assistant. How can I help you today?	2025-04-19 16:47:25.042713
-121	27	t	Order #ORD-61833 need to know the status	2025-04-19 16:47:56.302373
-122	27	f	Your order ORD-61833 is being processed. Estimated delivery: March 19, 2025.	2025-04-19 16:48:02.635756
-123	27	t	can you list out items in the Order #ORD-61833	2025-04-19 16:48:25.691831
-124	27	f	Here are the items in your order ORD-61833:	2025-04-19 16:48:32.039924
-125	28	t	can you list out items in the Order #ORD-61833	2025-04-19 17:01:28.833921
-126	28	f	Here are the items in your order ORD-61833:	2025-04-19 17:01:37.331978
-127	28	t	can you list out items in the Order #ORD-61833	2025-04-19 17:07:18.511374
-128	28	f	Here are the items in your order ORD-61833:	2025-04-19 17:07:24.80099
-129	29	t	can you list out items in the Order #ORD-61833	2025-04-19 17:09:25.949552
-130	29	f	Here are the items in your order ORD-61833:	2025-04-19 17:09:32.271203
-131	30	t	can you list out items in the Order #ORD-61833	2025-04-19 17:19:20.913144
-132	30	f	Here are the items in your order ORD-61833:	2025-04-19 17:19:27.187905
-133	31	t	hi	2025-04-19 17:31:10.576776
-134	31	f	I'm sorry, I'm having trouble connecting to my backend systems right now. Please try again later.	2025-04-19 17:31:14.68479
 \.
 
 
@@ -1490,7 +1325,24 @@ COPY public.orders (id, order_number, user_id, total_amount, status, ordered_at,
 --
 
 COPY public.products (id, company_id, name, description, price, stock_quantity, image_url, category, created_at, updated_at) FROM stdin;
-1	1	Soap	Hamam Soap	1	549	https://dooddles.com/wp-content/uploads/2023/07/Hamam.jpg	Test	2025-04-19 18:27:57.745	2025-04-19 12:59:20.96165
+42	1	Dettol Liquid Handwash	Antibacterial liquid handwash with a refreshing fragrance, 200ml.	99	150	https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcThRk051Q2bpnv2R5MqLW1EDOb2J9AHiM9FFQ&s	Personal Care	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+43	1	Harpic Toilet Bowl Cleaner	Powerful toilet cleaner with stain removal, 500ml.	150	200	https://m.media-amazon.com/images/I/51EDOZgkplL.jpg	Cleaning	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+44	1	Vim Dishwashing Gel	Lemon-scented dishwashing gel for tough grease, 500ml.	120	300	https://m.media-amazon.com/images/I/51A8+b9ZgHL.jpg	Kitchen Essentials	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+45	1	Scotch-Brite Sponge	Durable scrub sponge for dishwashing, pack of 3.	75	250	https://m.media-amazon.com/images/I/712IgUo8fjL.jpg	Kitchen Essentials	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+46	1	Lizol Floor Cleaner	Citrus-scented floor cleaner, 1L.	200	180	https://m.media-amazon.com/images/I/61W8NHxqS8L.jpg	Cleaning	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+47	1	Colgate Toothpaste	Cavity protection toothpaste, 200g.	110	400	https://m.media-amazon.com/images/I/61f+32QXZML.jpg	Personal Care	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+48	1	Philips LED Bulb	9W cool daylight LED bulb, energy-efficient.	150	100	https://m.media-amazon.com/images/I/51xKon1plxL._AC_UF894,1000_QL80_.jpg	Home Essentials	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+49	1	Ariel Detergent Powder	Top-load detergent powder for stain removal, 1kg.	250	220	https://m.media-amazon.com/images/I/71bgo79OXLL._AC_UF1000,1000_QL80_.jpg	Cleaning	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+50	1	Pigeon Gas Lighter	Stainless steel kitchen gas lighter with long nozzle.	80	350	https://www.bigbasket.com/media/uploads/p/xxl/40249614-2_2-pigeon-smart-gas-lighter-10009-stainless-steel-body-easy-to-use.jpg	Kitchen Essentials	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+52	1	Surf Excel Liquid	Liquid detergent for front-load machines, 1L.	220	160	https://m.media-amazon.com/images/I/41yiOXzQugL._AC_UF1000,1000_QL80_.jpg	Cleaning	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+53	1	Nivea Body Lotion	Moisturizing body lotion for dry skin, 400ml.	350	140	https://assets.ajio.com/medias/sys_master/root/20231220/sun1/6582d9b5ddf7791519dca409/-1117Wx1400H-4916003770-multi-MODEL.jpg	Personal Care	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+54	1	Good Knight Mosquito Repellent	Liquid vaporizer for mosquito protection, 45ml.	90	280	https://m.media-amazon.com/images/I/71H4nrOXz6L._AC_UF894,1000_QL80_.jpg	Home Essentials	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+55	1	Tissue Paper Roll	Soft and absorbent toilet paper, pack of 4 rolls.	180	500	https://m.media-amazon.com/images/I/61ZhKNfLiGL.jpg	Personal Care	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+56	1	Borosil Glass Set	Set of 6 drinking glasses, 350ml each.	400	80	https://m.media-amazon.com/images/I/61B1F2+EdhL.jpg	Kitchen Essentials	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+57	1	Eveready AA Batteries	Long-lasting AA batteries, pack of 10.	150	200	https://www.jiomart.com/images/product/original/491214005/eveready-red-1015-aa-carbon-zinc-batteries-pack-of-2-product-images-o491214005-p491214005-0-202205270018.jpg?im=Resize=(1000,1000)	Home Essentials	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+58	1	Pril Dishwashing Liquid	Krafty lime dishwashing liquid, 750ml.	160	240	https://www.bigbasket.com/media/uploads/p/xxl/40031951_11-pril-dishwash-liquid-active-2x-lime.jpg	Kitchen Essentials	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+59	1	Godrej Air Freshener	Floral-scented room freshener spray, 240ml.	140	190	https://i0.wp.com/wisycart.com/wp-content/uploads/2023/05/Sea-Breeze-01-jpg.webp	Home Essentials	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
+61	1	Comfort Fabric Conditioner	After-wash fabric softener, 860ml.	200	170	https://m.media-amazon.com/images/I/61OKcvlJm9L.jpg	Cleaning	2025-04-21 12:03:13.675003	2025-04-21 12:03:13.675003
 \.
 
 
@@ -1513,10 +1365,10 @@ COPY public.support_data (id, company_id, question, answer, category, created_at
 --
 
 COPY public.users (id, username, email, password_hash, created_at, last_login, is_active) FROM stdin;
-4	lokesh	lokesh@admin.com	$2b$12$Gs.v2pv27cF3JhUeCyo2cuukSESxScdRy.F32tr1qkVz3N0bGjRSG	2025-04-19 06:29:27.218989	2025-04-19 17:08:19.760414	t
 1	admin	admin@example.com	$2b$12$Gs.v2pv27cF3JhUeCyo2cuukSESxScdRy.F32tr1qkVz3N0bGjRSG	2025-04-19 06:14:04.26005	\N	t
 2	testuser	test@example.com	$2b$12$Gs.v2pv27cF3JhUeCyo2cuukSESxScdRy.F32tr1qkVz3N0bGjRSG	2025-04-19 06:14:04.26005	\N	t
-5	padma	padma@example.com	$2b$12$Gs.v2pv27cF3JhUeCyo2cuukSESxScdRy.F32tr1qkVz3N0bGjRSG	2025-04-19 14:53:06.907295	\N	t
+5	mohith	mohith@example.com	$2b$12$Gs.v2pv27cF3JhUeCyo2cuukSESxScdRy.F32tr1qkVz3N0bGjRSG	2025-04-19 14:53:06.907295	\N	t
+4	padma	padma@example.com	$2b$12$Gs.v2pv27cF3JhUeCyo2cuukSESxScdRy.F32tr1qkVz3N0bGjRSG	2025-04-19 06:29:27.218989	2025-04-19 17:08:19.760414	t
 \.
 
 
@@ -1580,7 +1432,7 @@ SELECT pg_catalog.setval('public.orders_id_seq', 88, true);
 -- Name: products_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.products_id_seq', 1, true);
+SELECT pg_catalog.setval('public.products_id_seq', 61, true);
 
 
 --
