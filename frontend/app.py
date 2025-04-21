@@ -627,7 +627,7 @@ def display_product_list():
                     st.markdown(f"""
                     <div class="product-card">
                         <h3>{product["name"]}</h3>
-                        <p style="font-size: 1.2rem; font-weight: bold; color: #4CAF50;">${product['price']:.2f}</p>
+                        <p style="font-size: 1.2rem; font-weight: bold; color: #4CAF50;">₹{product['price']:.2f}</p>
                     </div>
                     """, unsafe_allow_html=True)
                     
@@ -688,7 +688,7 @@ def display_cart():
         col1, col2, col3 = st.columns([3, 2, 1])
         
         with col1:
-            st.write(f"Price: ${item['price']:.2f}")
+            st.write(f"Price: ₹{item['price']:.2f}")
         
         with col2:
             qty = st.number_input(
@@ -709,7 +709,7 @@ def display_cart():
                         st.error("Failed to update cart")
         
         with col3:
-            st.write(f"Subtotal: ${item['subtotal']:.2f}")
+            st.write(f"Subtotal: ₹{item['subtotal']:.2f}")
             if st.button("Remove", key=f"remove_{item['cart_item_id']}"):
                 success = remove_from_cart(item["cart_item_id"])
                 if success:
@@ -725,7 +725,7 @@ def display_cart():
     </div>
     """, unsafe_allow_html=True)
     
-    st.subheader(f"Total: ${cart['total']:.2f}")
+    st.subheader(f"Total: ₹{cart['total']:.2f}")
     
     # Clear cart button
     if st.button("Clear Cart"):
@@ -791,7 +791,7 @@ def display_orders():
         
         with st.expander("View Details"):
             st.write(f"Date: {order['ordered_at'][:10]}")
-            st.write(f"Total: ${order['total_amount']:.2f}")
+            st.write(f"Total: ₹{order['total_amount']:.2f}")
             
             if order.get("estimated_delivery"):
                 st.write(f"Estimated Delivery: {order['estimated_delivery'][:10]}")
@@ -841,7 +841,7 @@ def display_orders():
                     items = st.session_state[session_key]["items"]
                     if items:
                         for item in items:
-                            st.write(f"• {item['quantity']} x {item['product_name']} (${item['price']:.2f} each)")
+                            st.write(f"• {item['quantity']} x {item['product_name']} (₹{item['price']:.2f} each)")
                     else:
                         st.write("No items found for this order.")
                 else:
@@ -938,7 +938,7 @@ def main():
         st.markdown(f"""
         <div style="text-align: center; margin-bottom: 2rem;">
             <p>Welcome, <b>{st.session_state.username}</b>!</p>
-            <p>🛒 {st.session_state.cart['item_count']} items (${st.session_state.cart['total']:.2f})</p>
+            <p>🛒 {st.session_state.cart['item_count']} items (₹{st.session_state.cart['total']:.2f})</p>
         </div>
         """, unsafe_allow_html=True)
         

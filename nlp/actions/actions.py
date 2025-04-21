@@ -253,9 +253,9 @@ class ActionListOrderItems(Action):
                     price = item.get("price", 0.0)
                     total = item.get("total", price * quantity)
                     
-                    msg += f"{idx}. {product_name} - Quantity: {quantity}, Price: ${price:.2f}, Total: ${total:.2f}\n"
+                    msg += f"{idx}. {product_name} - Quantity: {quantity}, Price: ₹{price:.2f}, Total: ₹{total:.2f}\n"
                 
-                msg += f"\nTotal order amount: ${order_data.get('total_amount', 0.0):.2f}"
+                msg += f"\nTotal order amount: ₹{order_data.get('total_amount', 0.0):.2f}"
 
                 # Add status information
                 status = order_data.get("status")
@@ -636,7 +636,7 @@ class ActionGetProductDetails(Action):
                     
                     # Format the response
                     msg = f"Here are the details for {product['name']}:\n\n"
-                    msg += f"Price: ${product['price']:.2f}\n"
+                    msg += f"Price: ₹{product['price']:.2f}\n"
                     msg += f"Description: {product['description']}\n"
                     msg += f"Category: {product['category']}\n"
                     msg += f"In Stock: {product['stock_quantity']}"
@@ -667,7 +667,7 @@ class ActionGetProductDetails(Action):
                         
                         # Format the response
                         msg = f"Here are the details for {product['name']}:\n\n"
-                        msg += f"Price: ${product['price']:.2f}\n"
+                        msg += f"Price: ₹{product['price']:.2f}\n"
                         msg += f"Description: {product['description']}\n"
                         msg += f"Category: {product['category']}\n"
                         msg += f"In Stock: {product['stock_quantity']}"
@@ -679,7 +679,7 @@ class ActionGetProductDetails(Action):
                         msg = f"I found {len(products)} products matching '{product_name}':\n\n"
                         
                         for i, product in enumerate(products[:5]):  # Limit to 5 products
-                            msg += f"{i+1}. {product['name']} - ${product['price']:.2f}\n"
+                            msg += f"{i+1}. {product['name']} - ₹{product['price']:.2f}\n"
                         
                         if len(products) > 5:
                             msg += f"\nAnd {len(products) - 5} more products."
@@ -817,7 +817,7 @@ class ActionAddToCart(Action):
                         msg = f"I found {len(products)} products matching '{product_name}':\n\n"
                         
                         for i, product in enumerate(products[:5]):  # Limit to 5 products
-                            msg += f"{i+1}. {product['name']} - ${product['price']:.2f}\n"
+                            msg += f"{i+1}. {product['name']} - ₹{product['price']:.2f}\n"
                         
                         if len(products) > 5:
                             msg += f"\nAnd {len(products) - 5} more products."
