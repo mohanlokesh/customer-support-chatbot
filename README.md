@@ -76,6 +76,9 @@ ai-chatbot/
    # Create the PostgreSQL database
    createdb ai_chatbot_new
    
+   # restore from backup
+   psql -U postgres -d ai_chatbot_new -f database_backup.sql
+   
    # Initialize the database
    python -m database.init_db
    ```
